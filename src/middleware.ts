@@ -52,20 +52,29 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Refresh session if needed
+  await supabase.auth.getUser()
+
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register')
-  const isProtectedRoute = pathname.startsWith('/dashboard') && !pathname.startsWith('/dashboard/login')
+  // Rotas públicas que não precisam de autenticação
+  const publicRoutes = ['/login', '/register', '/_next', '/favicon.ico', '/manifest.json', '/icons']
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  
+  // Rotas protegidas
+  const isProtectedRoute = pathname.startsWith('/dashboard')
 
+  // Se estiver em rota protegida e não tiver usuário, redirecionar para login
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (isAuthRoute && user) {
+  // Se estiver em rota pública (login/register) e já estiver logado, redirecionar para dashboard
+  if ((pathname === '/login' || pathname === '/register') && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

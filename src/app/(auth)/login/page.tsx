@@ -27,8 +27,12 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
-      router.refresh()
+      setLoading(false)
+      // Pequeno delay para garantir que o cookie seja definido
+      setTimeout(() => {
+        router.refresh()
+        router.push('/dashboard')
+      }, 100)
     }
   }
 
