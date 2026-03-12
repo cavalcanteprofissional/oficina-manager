@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+
+# Backup
+*.bak
+
+# === FORCAR INCLUSAO ===
+# Manter estes arquivos mesmo com as regras acima
+!agents.md
+!todo.md
+!supabase/
+!public/manifest.json

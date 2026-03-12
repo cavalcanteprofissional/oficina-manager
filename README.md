@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Oficina Manager
 
-## Getting Started
+**Versão:** 1.0.0
 
-First, run the development server:
+Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiva (PWA) construída com Next.js 15, Supabase e Tailwind CSS.
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+---
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Descrição |
+|------------|-----------|
+| Next.js 15 | Framework React com App Router |
+| React 19 | Biblioteca de UI |
+| Tailwind CSS | Framework de estilização |
+| Supabase | Banco de dados PostgreSQL + Auth + Storage |
+| TypeScript | Tipagem estática |
+| Vercel | Hospedagem |
+
+---
+
+## 📋 Funcionalidades
+
+### Cadastros
+- ✅ Clientes (com foto)
+- ✅ Fornecedores
+- ✅ Mecânicos (com especialidades)
+- ✅ Veículos (múltiplas fotos)
+- ✅ Produtos (estoque, margem de lucro)
+- ✅ Serviços (mão de obra)
+
+### Operações
+- ✅ Ordens de Serviço (OS)
+- ✅ Vendas no balcão
+- ✅ Controle de estoque
+- ✅ Agendamentos
+- ✅ Dashboard
+
+### Financeiro
+- ✅ Contas a Pagar
+- ✅ Contas a Receber
+- ✅ Controle de Caixa
+
+### Extras
+- ✅ Relatórios
+- ✅ Reajuste de preços em massa
+- ✅ PWA (instalável)
+
+---
+
+## 🚀 Começando
+
+### Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+- Conta no Supabase
+
+### Instalação
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone o repositório
+git clone <repo-url>
+
+# Instale as dependências
+npm install
+
+# Configure as variáveis de ambiente
+# Copie .env.local.example para .env.local
+cp .env.local.example .env.local
+# Edite com suas credenciais do Supabase
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Variáveis de Ambiente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=sua_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Executando
 
-## Learn More
+```bash
+# Desenvolvimento
+npm run dev
 
-To learn more about Next.js, take a look at the following resources:
+# Produção
+npm run build
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estrutura
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── (auth)/          # Login, Registro
+│   ├── (dashboard)/     # Páginas protegidas
+│   └── api/            # API Routes
+├── components/
+│   ├── ui/             # Componentes base
+│   └── layout/         # Sidebar, Navigation
+└── lib/
+    └── supabase/       # Cliente/Server Supabase
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 PWA
+
+O app pode ser instalado como aplicativo nativo:
+
+1. Acesse pelo navegador (Chrome/Safari)
+2. Toque em "Adicionar à tela inicial"
+3. Use offline (funcionalidades básicas)
+
+---
+
+## 🌐 Deploy
+
+### Vercel (Recomendado)
+
+1. Conecte o repositório à Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático a cada push
+
+### Variáveis para Vercel
+
+| Variável | Valor |
+|----------|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do seu projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave anon do Supabase |
+
+---
+
+## 📄 Licença
+
+MIT License - see LICENSE for details.
+
+---
+
+## 📞 Suporte
+
+Para dúvidas ou problemas, abra uma issue no GitHub.
