@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { CEPInput } from '@/components/ui/CEPInput'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react'
+import { CEPResponse } from '@/lib/utils/cep'
 
 interface Fornecedor {
   id: string
@@ -26,6 +28,32 @@ export default function FornecedoresPage() {
   const [editing, setEditing] = useState<Fornecedor | null>(null)
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
+
+  const handleCepFound = (data: CEPResponse) => {
+    const event = new Event('input', { bubbles: true })
+    
+    const enderecoInput = document.querySelector('input[name="endereco"]') as HTMLInputElement
+    const bairroInput = document.querySelector('input[name="bairro"]') as HTMLInputElement
+    const cidadeInput = document.querySelector('input[name="cidade"]') as HTMLInputElement
+    const estadoInput = document.querySelector('input[name="estado"]') as HTMLInputElement
+    
+    if (enderecoInput) {
+      enderecoInput.value = data.logradouro
+      enderecoInput.dispatchEvent(event)
+    }
+    if (bairroInput) {
+      bairroInput.value = data.bairro
+      bairroInput.dispatchEvent(event)
+    }
+    if (cidadeInput) {
+      cidadeInput.value = data.localizacao
+      cidadeInput.dispatchEvent(event)
+    }
+    if (estadoInput) {
+      estadoInput.value = data.uf
+      estadoInput.dispatchEvent(event)
+    }
+  }
 
   const fetchFornecedores = async () => {
     setLoading(true)
@@ -107,8 +135,6 @@ export default function FornecedoresPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Razão Social</th>
-                    <th className="text-left py-3 px-4">CNPJ</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Razão Social</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">CNPJ</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefone</th>
@@ -152,7 +178,7 @@ export default function FornecedoresPage() {
                 <Input label="E-mail" name="email" type="email" defaultValue={editing?.email || ''} />
                 <Input label="Telefone 1 *" name="telefone1" required defaultValue={editing?.telefone1} />
                 <Input label="Telefone 2" name="telefone2" defaultValue={''} />
-                <Input label="CEP" name="cep" defaultValue={''} />
+                <CEPInput label="CEP" name="cep" onCepFound={handleCepFound} defaultValue={''} />
                 <Input label="Endereço" name="endereco" className="md:col-span-2" defaultValue={''} />
                 <Input label="Número" name="numero" defaultValue={''} />
                 <Input label="Complemento" name="complemento" defaultValue={''} />

@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { CEPInput } from '@/components/ui/CEPInput'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react'
+import { CEPResponse } from '@/lib/utils/cep'
 
 interface Cliente {
   id: string
@@ -44,6 +46,32 @@ export default function ClientesPage() {
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null)
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
+
+  const handleCepFound = (data: CEPResponse) => {
+    const event = new Event('input', { bubbles: true })
+    
+    const enderecoInput = document.querySelector('input[name="endereco"]') as HTMLInputElement
+    const bairroInput = document.querySelector('input[name="bairro"]') as HTMLInputElement
+    const cidadeInput = document.querySelector('input[name="cidade"]') as HTMLInputElement
+    const estadoInput = document.querySelector('input[name="estado"]') as HTMLInputElement
+    
+    if (enderecoInput) {
+      enderecoInput.value = data.logradouro
+      enderecoInput.dispatchEvent(event)
+    }
+    if (bairroInput) {
+      bairroInput.value = data.bairro
+      bairroInput.dispatchEvent(event)
+    }
+    if (cidadeInput) {
+      cidadeInput.value = data.localizacao
+      cidadeInput.dispatchEvent(event)
+    }
+    if (estadoInput) {
+      estadoInput.value = data.uf
+      estadoInput.dispatchEvent(event)
+    }
+  }
 
   const fetchClientes = async () => {
     setLoading(true)
@@ -234,9 +262,10 @@ export default function ClientesPage() {
                   name="telefone2"
                   defaultValue={editingCliente?.telefone2 || ''}
                 />
-                <Input
+                <CEPInput
                   label="CEP"
                   name="cep"
+                  onCepFound={handleCepFound}
                   defaultValue={editingCliente?.cep || ''}
                 />
                 <Input

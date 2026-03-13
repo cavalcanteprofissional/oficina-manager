@@ -60,6 +60,12 @@
 - Adicionadas utilities CSS: touch-manipulation, safe-area-bottom, scrollbar-hide
 - Bottom navigation com highlight no menu "Mais"
 
+### Consulta CEP (VIACEP)
+- Criado utilitário `src/lib/utils/cep.ts` para consulta gratuita de CEPs
+- Criado componente reutilizável `src/components/ui/CEPInput.tsx`
+- Integrado nos formulários de Clientes e Fornecedores
+- API gratuita: https://viacep.com.br/ws/{CEP}/json/
+
 ---
 
 ## Resumo Final
