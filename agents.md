@@ -352,8 +352,8 @@ Executar SQL completo (15 tabelas + índices + triggers):
 ### Variáveis de Ambiente (.env.local)
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://itueopegwvlqyfznkuws.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_LQn4cbK5aZkIjzhV3Nm4Cg_BWRVeJPo
+SUPABASE_URL=https://itueopegwvlqyfznkuws.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_LQn4cbK5aZkIjzhV3Nm4Cg_BWRVeJPo
 ```
 
 ### Supabase Client (src/lib/supabase/client.ts)
@@ -363,8 +363,8 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export const createClient = () => {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
   )
 }
 ```
