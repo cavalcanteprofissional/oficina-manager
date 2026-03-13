@@ -112,19 +112,21 @@ export default function MecanicosPage() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Nome</th>
                     <th className="text-left py-3 px-4">CPF</th>
-                    <th className="text-left py-3 px-4">Telefone</th>
-                    <th className="text-left py-3 px-4">Comissão %</th>
-                    <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">CPF</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefone</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Comissão %</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {mecanicos.map((m) => (
                     <tr key={m.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">{m.nome}</td>
-                      <td className="py-3 px-4">{m.cpf || '-'}</td>
-                      <td className="py-3 px-4">{m.telefone}</td>
-                      <td className="py-3 px-4">{m.comissao_percentual || 0}%</td>
+                      <td className="py-3 px-4 text-gray-900">{m.nome}</td>
+                      <td className="py-3 px-4 text-gray-900">{m.cpf || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{m.telefone}</td>
+                      <td className="py-3 px-4 text-gray-900">{m.comissao_percentual || 0}%</td>
                       <td className="py-3 px-4">
                         <button onClick={() => toggleAtivo(m.id, m.ativo)} className={`px-2 py-1 rounded text-xs ${m.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                           {m.ativo ? 'Ativo' : 'Inativo'}

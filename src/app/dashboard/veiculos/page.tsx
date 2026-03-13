@@ -121,20 +121,20 @@ export default function VeiculosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Placa</th>
-                    <th className="text-left py-3 px-4">Marca/Modelo</th>
-                    <th className="text-left py-3 px-4">Ano</th>
-                    <th className="text-left py-3 px-4">Cliente</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Placa</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Marca/Modelo</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Ano</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Cliente</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {veiculos.map((v) => (
                     <tr key={v.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono">{v.placa}</td>
-                      <td className="py-3 px-4">{v.marca} {v.modelo}</td>
-                      <td className="py-3 px-4">{v.ano_fabricacao}/{v.ano_modelo}</td>
-                      <td className="py-3 px-4">{(v as any).clientes?.nome || '-'}</td>
+                      <td className="py-3 px-4 font-mono text-gray-900">{v.placa}</td>
+                      <td className="py-3 px-4 text-gray-900">{v.marca} {v.modelo}</td>
+                      <td className="py-3 px-4 text-gray-900">{v.ano_fabricacao}/{v.ano_modelo}</td>
+                      <td className="py-3 px-4 text-gray-900">{(v as any).clientes?.nome || '-'}</td>
                       <td className="py-3 px-4 text-right">
                         <button onClick={() => { setEditing(v); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
                         <button onClick={() => handleDelete(v.id)} className="text-red-600"><Trash2 size={18} /></button>

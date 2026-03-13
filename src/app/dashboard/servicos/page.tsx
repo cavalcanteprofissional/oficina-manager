@@ -117,20 +117,24 @@ export default function ServicosPage() {
                     <th className="text-left py-3 px-4">Nome</th>
                     <th className="text-left py-3 px-4">Categoria</th>
                     <th className="text-right py-3 px-4">Tempo</th>
-                    <th className="text-right py-3 px-4">Preço</th>
-                    <th className="text-right py-3 px-4">Comissão</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Código</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Categoria</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Tempo</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Preço</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Comissão</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {servicos.map((s) => (
                     <tr key={s.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-sm">{s.codigo}</td>
-                      <td className="py-3 px-4">{s.nome}</td>
-                      <td className="py-3 px-4">{s.categoria || '-'}</td>
-                      <td className="py-3 px-4 text-right">{formatTime(s.tempo_estimado)}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(s.preco_sugerido)}</td>
-                      <td className="py-3 px-4 text-right">{s.comissao_percentual || 0}%</td>
+                      <td className="py-3 px-4 font-mono text-sm text-gray-900">{s.codigo}</td>
+                      <td className="py-3 px-4 text-gray-900">{s.nome}</td>
+                      <td className="py-3 px-4 text-gray-900">{s.categoria || '-'}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{formatTime(s.tempo_estimado)}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(s.preco_sugerido)}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{s.comissao_percentual || 0}%</td>
                       <td className="py-3 px-4 text-right">
                         <button onClick={() => { setEditing(s); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
                         <button onClick={() => handleDelete(s.id)} className="text-red-600"><Trash2 size={18} /></button>

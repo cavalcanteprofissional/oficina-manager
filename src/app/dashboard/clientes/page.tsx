@@ -160,10 +160,10 @@ export default function ClientesPage() {
                   <tbody>
                     {clientes.map((cliente) => (
                       <tr key={cliente.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4">{cliente.nome}</td>
-                        <td className="py-3 px-4">{cliente.cpf_cnpj || '-'}</td>
-                        <td className="py-3 px-4">{cliente.telefone1}</td>
-                        <td className="py-3 px-4">{cliente.cidade || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{cliente.nome}</td>
+                        <td className="py-3 px-4 text-gray-900">{cliente.cpf_cnpj || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{cliente.telefone1}</td>
+                        <td className="py-3 px-4 text-gray-900">{cliente.cidade || '-'}</td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => handleEdit(cliente)}

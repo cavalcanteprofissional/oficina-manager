@@ -109,18 +109,20 @@ export default function FornecedoresPage() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Razão Social</th>
                     <th className="text-left py-3 px-4">CNPJ</th>
-                    <th className="text-left py-3 px-4">Telefone</th>
-                    <th className="text-left py-3 px-4">Cidade</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Razão Social</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">CNPJ</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefone</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Cidade</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {fornecedores.map((f) => (
                     <tr key={f.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">{f.razao_social}</td>
-                      <td className="py-3 px-4">{f.cnpj || '-'}</td>
-                      <td className="py-3 px-4">{f.telefone1}</td>
-                      <td className="py-3 px-4">{f.cidade || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.razao_social}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.cnpj || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.telefone1}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.cidade || '-'}</td>
                       <td className="py-3 px-4 text-right">
                         <button onClick={() => { setEditing(f); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
                         <button onClick={() => handleDelete(f.id)} className="text-red-600"><Trash2 size={18} /></button>

@@ -187,20 +187,21 @@ export default function VendasPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Nº Venda</th>
-                    <th className="text-left py-3 px-4">Data</th>
-                    <th className="text-left py-3 px-4">Cliente</th>
-                    <th className="text-right py-3 px-4">Total</th>
-                    <th className="text-left py-3 px-4">Forma Pag.</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nº</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Cliente</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Total</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Forma Pag.</th>
                   </tr>
                 </thead>
                 <tbody>
                   {vendas.map((v) => (
                     <tr key={v.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono">#{v.numero_venda}</td>
-                      <td className="py-3 px-4">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
-                      <td className="py-3 px-4">{(v as any).clientes?.nome || '-'}</td>
-                      <td className="py-3 px-4 text-right font-medium">{formatCurrency(v.total)}</td>
-                      <td className="py-3 px-4">{v.forma_pagamento || '-'}</td>
+                      <td className="py-3 px-4 font-mono text-gray-900">#{v.numero_venda}</td>
+                      <td className="py-3 px-4 text-gray-900">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
+                      <td className="py-3 px-4 text-gray-900">{(v as any).clientes?.nome || '-'}</td>
+                      <td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(v.total)}</td>
+                      <td className="py-3 px-4 text-gray-900">{v.forma_pagamento || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

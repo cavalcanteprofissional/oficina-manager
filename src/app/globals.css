@@ -78,6 +78,24 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+input, select, textarea {
+  color: #1a1a2e;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  input, select, textarea {
+    color: #f1f5f9;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    color: #64748b;
+  }
+}
+
 @layer utilities {
   .touch-manipulation {
     touch-action: manipulation;

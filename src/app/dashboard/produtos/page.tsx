@@ -119,29 +119,29 @@ export default function ProdutosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Código</th>
-                    <th className="text-left py-3 px-4">Nome</th>
-                    <th className="text-right py-3 px-4">Custo</th>
-                    <th className="text-right py-3 px-4">Venda</th>
-                    <th className="text-right py-3 px-4">Estoque</th>
-                    <th className="text-left py-3 px-4">Categoria</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Código</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Custo</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Venda</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Estoque</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Categoria</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {produtos.map((p) => (
                     <tr key={p.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-sm">{p.codigo}</td>
-                      <td className="py-3 px-4">{p.nome}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(p.preco_custo)}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(p.preco_venda)}</td>
+                      <td className="py-3 px-4 font-mono text-sm text-gray-900">{p.codigo}</td>
+                      <td className="py-3 px-4 text-gray-900">{p.nome}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_custo)}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_venda)}</td>
                       <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1 text-gray-900">
                           {p.estoque_atual <= p.estoque_minimo && <AlertTriangle size={14} className="text-yellow-500" />}
                           {p.estoque_atual}
                         </div>
                       </td>
-                      <td className="py-3 px-4">{p.categoria || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{p.categoria || '-'}</td>
                       <td className="py-3 px-4 text-right">
                         <button onClick={() => { setEditing(p); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
                         <button onClick={() => handleDelete(p.id)} className="text-red-600"><Trash2 size={18} /></button>
