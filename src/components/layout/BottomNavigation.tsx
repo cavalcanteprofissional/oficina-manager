@@ -45,7 +45,8 @@ export default function BottomNavigation() {
         <ul className="flex justify-around py-2">
           {allItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            const isActive = pathname === item.href || 
+              (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
             
             if (item.action === 'menu') {
               return (
@@ -93,12 +94,15 @@ export default function BottomNavigation() {
                 { name: 'Contas', href: '/dashboard/contas-pagar', icon: Home },
               ].map((item) => {
                 const Icon = item.icon
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setShowMenu(false)}
-                    className="flex flex-col items-center p-2 text-gray-700 hover:bg-gray-100 rounded"
+                    className={`flex flex-col items-center p-2 rounded ${
+                      isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
                   >
                     <Icon size={24} />
                     <span className="text-xs mt-1 text-center">{item.name}</span>

@@ -37,7 +37,28 @@
 - [x] Relatórios (aniversariantes, top produtos/serviços, resumo)
 - [x] Reajuste de Preços (por percentual ou valor)
 - [x] PWA (manifest.json, ícones, viewport)
+- [x] UX/UI Improvements (menu active state, cores, responsividade)
 - [ ] Deploy (pronto para Vercel)
+
+---
+
+## Correções e Melhorias Recentes
+
+### Menu Active State Fix
+- Corrigido bug no Sidebar.tsx onde Dashboard sempre ficava destacado
+- Aplicada mesma lógica no BottomNavigation.tsx
+- Expressão atual: `pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))`
+
+### Melhorias de Cores (globals.css)
+- foreground: #1a1a2e (mais escuro para melhor contraste)
+- muted-foreground: #475569 (mais legível)
+- destructive: #dc2626 (vermelho mais vibrante)
+- success: #16a34a (verde mais vibrante)
+- Adicionadas variáveis para dark mode
+
+### Melhorias de Responsividade
+- Adicionadas utilities CSS: touch-manipulation, safe-area-bottom, scrollbar-hide
+- Bottom navigation com highlight no menu "Mais"
 
 ---
 

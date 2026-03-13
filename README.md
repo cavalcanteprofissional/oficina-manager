@@ -102,11 +102,11 @@ npm start
 src/
 ├── app/
 │   ├── (auth)/          # Login, Registro
-│   ├── (dashboard)/     # Páginas protegidas
+│   ├── dashboard/       # Páginas protegidas (rotas /dashboard/*)
 │   └── api/            # API Routes
 ├── components/
 │   ├── ui/             # Componentes base
-│   └── layout/         # Sidebar, Navigation
+│   └── layout/         # Sidebar, BottomNavigation
 └── lib/
     └── supabase/       # Cliente/Server Supabase
 ```
