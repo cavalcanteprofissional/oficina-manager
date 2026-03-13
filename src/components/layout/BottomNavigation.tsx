@@ -8,34 +8,82 @@ import {
   Car, 
   Wrench, 
   ShoppingCart,
-  Menu
+  Menu,
+  Package,
+  ClipboardList,
+  Calendar,
+  Wallet,
+  CreditCard,
+  Receipt,
+  BarChart3
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { LucideIcon } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { Role, PERMISSOES_POR_ROLE } from '@/lib/utils/usuario'
 
 interface MenuItem {
   name: string
   href: string
   icon: LucideIcon
+  key: string
   action?: 'menu'
 }
 
-const menuItems: MenuItem[] = [
-  { name: 'Início', href: '/dashboard', icon: Home },
-  { name: 'Clientes', href: '/dashboard/clientes', icon: Users },
-  { name: 'Veículos', href: '/dashboard/veiculos', icon: Car },
-  { name: 'Mecânicos', href: '/dashboard/mecanicos', icon: Wrench },
-  { name: 'Produtos', href: '/dashboard/produtos', icon: ShoppingCart },
+const allMenuItems: MenuItem[] = [
+  { name: 'Início', href: '/dashboard', icon: Home, key: 'dashboard' },
+  { name: 'Clientes', href: '/dashboard/clientes', icon: Users, key: 'clientes' },
+  { name: 'Veículos', href: '/dashboard/veiculos', icon: Car, key: 'veiculos' },
+  { name: 'Mecânicos', href: '/dashboard/mecanicos', icon: Wrench, key: 'mecanicos' },
+  { name: 'Produtos', href: '/dashboard/produtos', icon: ShoppingCart, key: 'produtos' },
 ]
 
-const bottomNavItems: MenuItem[] = [
-  { name: 'Mais', href: '#', icon: Menu, action: 'menu' },
+const allExpandedItems: MenuItem[] = [
+  { name: 'Fornecedores', href: '/dashboard/fornecedores', icon: Package, key: 'fornecedores' },
+  { name: 'Serviços', href: '/dashboard/servicos', icon: ClipboardList, key: 'servicos' },
+  { name: 'OS', href: '/dashboard/ordens-servico', icon: ClipboardList, key: 'ordens-servico' },
+  { name: 'Vendas', href: '/dashboard/vendas', icon: ShoppingCart, key: 'vendas' },
+  { name: 'Estoque', href: '/dashboard/estoque', icon: ShoppingCart, key: 'estoque' },
+  { name: 'Agenda', href: '/dashboard/agendamentos', icon: Calendar, key: 'agendamentos' },
+  { name: 'Caixa', href: '/dashboard/caixa', icon: Wallet, key: 'caixa' },
+  { name: 'Contas', href: '/dashboard/contas-pagar', icon: CreditCard, key: 'contas-pagar' },
+  { name: 'Receber', href: '/dashboard/contas-receber', icon: Receipt, key: 'contas-receber' },
+  { name: 'Relatórios', href: '/dashboard/relatorios', icon: BarChart3, key: 'relatorios' },
+  { name: 'Usuários', href: '/dashboard/usuarios', icon: Users, key: 'usuarios' },
 ]
 
 export default function BottomNavigation() {
   const pathname = usePathname()
   const [showMenu, setShowMenu] = useState(false)
+  const [role, setRole] = useState<Role>('comum')
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('usuarios')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (data) {
+          setRole(data.role as Role)
+        }
+      }
+    }
+    fetchUserRole()
+  }, [supabase])
+
+  const permissoes = PERMISSOES_POR_ROLE[role]
+  const menuItems = allMenuItems.filter(item => permissoes.includes(item.key))
+  const expandedItems = allExpandedItems.filter(item => permissoes.includes(item.key))
+
+  const bottomNavItems = [
+    { name: 'Mais', href: '#', icon: Menu, action: 'menu' as const },
+  ]
 
   const allItems = [...menuItems, ...bottomNavItems]
 
@@ -83,16 +131,7 @@ export default function BottomNavigation() {
         <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setShowMenu(false)}>
           <div className="fixed bottom-16 left-0 right-0 bg-white rounded-t-lg p-4" onClick={(e) => e.stopPropagation()}>
             <div className="grid grid-cols-4 gap-4">
-              {[
-                { name: 'Fornecedores', href: '/dashboard/fornecedores', icon: Users },
-                { name: 'Serviços', href: '/dashboard/servicos', icon: Wrench },
-                { name: 'OS', href: '/dashboard/ordens-servico', icon: ShoppingCart },
-                { name: 'Vendas', href: '/dashboard/vendas', icon: ShoppingCart },
-                { name: 'Estoque', href: '/dashboard/estoque', icon: ShoppingCart },
-                { name: 'Agenda', href: '/dashboard/agendamentos', icon: Home },
-                { name: 'Caixa', href: '/dashboard/caixa', icon: Home },
-                { name: 'Contas', href: '/dashboard/contas-pagar', icon: Home },
-              ].map((item) => {
+              {expandedItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                 return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -22,29 +22,61 @@ import {
   LogOut
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Role, PERMISSOES_POR_ROLE } from '@/lib/utils/usuario'
 
-const menuItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: TrendingUp },
-  { name: 'Clientes', href: '/dashboard/clientes', icon: Users },
-  { name: 'Veículos', href: '/dashboard/veiculos', icon: Car },
-  { name: 'Mecânicos', href: '/dashboard/mecanicos', icon: Wrench },
-  { name: 'Fornecedores', href: '/dashboard/fornecedores', icon: Package },
-  { name: 'Produtos', href: '/dashboard/produtos', icon: ShoppingCart },
-  { name: 'Serviços', href: '/dashboard/servicos', icon: ClipboardList },
-  { name: 'Ordens de Serviço', href: '/dashboard/ordens-servico', icon: ClipboardList },
-  { name: 'Vendas', href: '/dashboard/vendas', icon: ShoppingCart },
-  { name: 'Estoque', href: '/dashboard/estoque', icon: Box },
-  { name: 'Agenda', href: '/dashboard/agendamentos', icon: Calendar },
-  { name: 'Caixa', href: '/dashboard/caixa', icon: Wallet },
-  { name: 'Contas a Pagar', href: '/dashboard/contas-pagar', icon: CreditCard },
-  { name: 'Contas a Receber', href: '/dashboard/contas-receber', icon: Receipt },
-  { name: 'Relatórios', href: '/dashboard/relatorios', icon: BarChart3 },
+interface MenuItem {
+  name: string
+  href: string
+  icon: any
+  key: string
+}
+
+const allMenuItems: MenuItem[] = [
+  { name: 'Dashboard', href: '/dashboard', icon: TrendingUp, key: 'dashboard' },
+  { name: 'Clientes', href: '/dashboard/clientes', icon: Users, key: 'clientes' },
+  { name: 'Veículos', href: '/dashboard/veiculos', icon: Car, key: 'veiculos' },
+  { name: 'Mecânicos', href: '/dashboard/mecanicos', icon: Wrench, key: 'mecanicos' },
+  { name: 'Fornecedores', href: '/dashboard/fornecedores', icon: Package, key: 'fornecedores' },
+  { name: 'Produtos', href: '/dashboard/produtos', icon: ShoppingCart, key: 'produtos' },
+  { name: 'Serviços', href: '/dashboard/servicos', icon: ClipboardList, key: 'servicos' },
+  { name: 'Ordens de Serviço', href: '/dashboard/ordens-servico', icon: ClipboardList, key: 'ordens-servico' },
+  { name: 'Vendas', href: '/dashboard/vendas', icon: ShoppingCart, key: 'vendas' },
+  { name: 'Estoque', href: '/dashboard/estoque', icon: Box, key: 'estoque' },
+  { name: 'Agenda', href: '/dashboard/agendamentos', icon: Calendar, key: 'agendamentos' },
+  { name: 'Caixa', href: '/dashboard/caixa', icon: Wallet, key: 'caixa' },
+  { name: 'Contas a Pagar', href: '/dashboard/contas-pagar', icon: CreditCard, key: 'contas-pagar' },
+  { name: 'Contas a Receber', href: '/dashboard/contas-receber', icon: Receipt, key: 'contas-receber' },
+  { name: 'Relatórios', href: '/dashboard/relatorios', icon: BarChart3, key: 'relatorios' },
+  { name: 'Usuários', href: '/dashboard/usuarios', icon: Users, key: 'usuarios' },
+  { name: 'Reajuste', href: '/dashboard/reajuste', icon: TrendingUp, key: 'reajuste' },
 ]
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [role, setRole] = useState<Role>('comum')
   const pathname = usePathname()
   const supabase = createClient()
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('usuarios')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (data) {
+          setRole(data.role as Role)
+        }
+      }
+    }
+    fetchUserRole()
+  }, [supabase])
+
+  const permissoes = PERMISSOES_POR_ROLE[role]
+  const menuItems = allMenuItems.filter(item => permissoes.includes(item.key))
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
