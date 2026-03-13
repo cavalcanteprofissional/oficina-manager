@@ -80,8 +80,8 @@
 ### Para Deploy:
 1. Conectar repositório à Vercel
 2. Configurar variáveis de ambiente na Vercel:
-   - SUPABASE_URL
-   - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+   - NEXT_PUBLIC_SUPABASE_URL
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY
 3. Deploy automático
 
 ### Build: ✅ Passando (34 rotas)

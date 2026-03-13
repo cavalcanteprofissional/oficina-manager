@@ -79,8 +79,8 @@ cp .env.local.example .env.local
 ### Variáveis de Ambiente
 
 ```env
-SUPABASE_URL=sua_url_supabase
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sua_chave_anon
+NEXT_PUBLIC_SUPABASE_URL=sua_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon
 ```
 
 ### Executando
@@ -135,8 +135,8 @@ O app pode ser instalado como aplicativo nativo:
 
 | Variável | Valor |
 |----------|-------|
-| `SUPABASE_URL` | URL do seu projeto Supabase |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave anon do Supabase |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do seu projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave anon do Supabase |
 
 ---
 
