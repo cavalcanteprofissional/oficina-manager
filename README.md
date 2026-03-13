@@ -51,6 +51,7 @@ Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiv
 - ✅ Reajuste de preços em massa
 - ✅ PWA (instalável)
 - ✅ Consulta automática de CEP (VIACEP)
+- ✅ Sistema de gestão de usuários com roles
 
 ---
 
@@ -109,9 +110,40 @@ src/
 │   ├── ui/             # Componentes base (Button, Input, CEPInput, etc)
 │   └── layout/         # Sidebar, BottomNavigation
 └── lib/
-    ├── supabase/       # Cliente/Server Supabase
-    └── utils/          # Utilitários (CEP, etc)
+    ├── supabase/       # Cliente/Server Supabase, scripts SQL
+    └── utils/          # Utilitários (CEP, usuario, etc)
 ```
+
+---
+
+## 👥 Sistema de Usuários e Permissões
+
+### Roles Disponíveis
+
+| Role | Descrição | Acesso |
+|------|-----------|--------|
+| **admin** | Administrador | Todas as abas |
+| **gerente** | Gerente | Dashboard, Clientes, Veículos, OS, Vendas, Estoque, Relatórios, Reajuste |
+| **mecanico** | Mecânico | Dashboard, Ordens Serviço, Veículos, Agendamentos |
+| **caixa** | Caixa | Dashboard, Vendas, Caixa, Contas Receber |
+| **comum** | Comum | Apenas Dashboard |
+
+### Configuração Inicial
+
+1. Execute o script SQL em `src/lib/supabase/usuarios.sql` no Supabase SQL Editor
+2. O primeiro usuário admin deve ser criado manualmente via SQL
+
+### Criar Admin via SQL
+
+```sql
+INSERT INTO usuarios (id, nome, role, ativo)
+VALUES ('SEU-USER-ID', 'Seu Nome', 'admin', true)
+ON CONFLICT (id) DO NOTHING;
+```
+
+Obtenha o ID do usuário em: Supabase Dashboard → Authentication → Users
+
+---
 
 ---
 
