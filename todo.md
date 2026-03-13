@@ -66,6 +66,16 @@
 - Integrado nos formulários de Clientes e Fornecedores
 - API gratuita: https://viacep.com.br/ws/{CEP}/json/
 
+### Sistema de Gestão de Usuários
+- Criado script SQL em `src/lib/supabase/usuarios.sql`
+- Tabela `usuarios` vinculada ao auth.users
+- Roles: admin, gerente, mecanico, caixa, comum
+- Permissões por role (grupos fixos)
+- Criada página de administração `/dashboard/usuarios`
+- Modificado AuthCheck para verificar permissões
+- Modificado Sidebar e BottomNavigation para filtrar por role
+- Criação automática de usuário ao fazer login
+
 ---
 
 ## Resumo Final
@@ -90,4 +100,4 @@
    - NEXT_PUBLIC_SUPABASE_ANON_KEY
 3. Deploy automático
 
-### Build: ✅ Passando (34 rotas)
+### Build: ✅ Passando (37 rotas)
