@@ -53,9 +53,11 @@ logs
 # Backup
 *.bak
 
+# Supabase (scripts SQL locais)
+supabase/
+
 # === FORCAR INCLUSAO ===
 # Manter estes arquivos mesmo com as regras acima
 !agents.md
 !todo.md
-!supabase/
 !public/manifest.json
