@@ -50,6 +50,7 @@ Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiv
 - ✅ Relatórios
 - ✅ Reajuste de preços em massa
 - ✅ PWA (instalável)
+- ✅ Consulta automática de CEP (VIACEP)
 
 ---
 
@@ -105,10 +106,11 @@ src/
 │   ├── dashboard/       # Páginas protegidas (rotas /dashboard/*)
 │   └── api/            # API Routes
 ├── components/
-│   ├── ui/             # Componentes base
+│   ├── ui/             # Componentes base (Button, Input, CEPInput, etc)
 │   └── layout/         # Sidebar, BottomNavigation
 └── lib/
-    └── supabase/       # Cliente/Server Supabase
+    ├── supabase/       # Cliente/Server Supabase
+    └── utils/          # Utilitários (CEP, etc)
 ```
 
 ---
