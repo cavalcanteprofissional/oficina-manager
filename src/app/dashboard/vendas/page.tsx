@@ -134,18 +134,25 @@ export default function VendasPage() {
     if (carrinho.length === 0) return
     setSaving(true)
 
-    const { error } = await supabase.from('vendas').insert([{
-      cliente_id: selectedCliente || null,
-      tipo_venda: 'balcao',
-      subtotal: totalCarrinho,
-      desconto: 0,
-      total: totalCarrinho,
-      forma_pagamento: formaPagamento || null,
-      status: 'concluida',
-    }])
+    const res = await fetch('/api/vendas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente_id: selectedCliente || null,
+        tipo_venda: 'balcao',
+        forma_pagamento: formaPagamento || null,
+        desconto: 0,
+        itens: carrinho.map(item => ({
+          produto_id: item.produto_id,
+          quantidade: item.quantidade,
+          valor_unitario: item.valor_unitario,
+          desconto: item.desconto,
+          valor_total: item.valor_total,
+        })),
+      }),
+    })
 
-    if (!error) {
-      // Estoque é atualizado pela API
+    if (res.ok) {
       setCarrinho([])
       setSelectedCliente('')
       setFormaPagamento('')

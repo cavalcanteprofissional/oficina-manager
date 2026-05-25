@@ -78,6 +78,23 @@
 
 ---
 
+---
+
+## 🔧 Correções Aplicadas (25/05/2026)
+
+| # | Item | Status |
+|---|------|--------|
+| 🔥 | **Vendas**: página agora chama `POST /api/vendas` → itens + estoque | ✅ |
+| 🔧 | **Middleware**: `src/middleware.ts` — proteção server-side de rotas | ✅ |
+| 🧩 | **Toast**: `src/components/ui/Toast.tsx` — feedback visual com `useToast()` | ✅ |
+| 🧩 | **Modal**: `src/components/ui/Modal.tsx` — genérico + `ConfirmModal` | ✅ |
+| 📋 | **DataTable**: `src/components/tables/DataTable.tsx` — paginação, ordenação, busca | ✅ |
+| 📦 | **Zod**: `src/lib/schemas.ts` — schemas p/ todas entidades + validação em APIs | ✅ |
+| ⚙️ | **PWA**: `public/sw.js` — service worker manual registrado no layout | ✅ |
+| ✨ | **Extras**: ImageUpload, CurrencyInput, SelectSearch, hooks, types | ✅ |
+
+---
+
 ## Resumo Final
 
 ### Funcionalidades Implementadas:

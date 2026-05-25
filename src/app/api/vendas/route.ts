@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { vendaSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -21,26 +22,25 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
 
-  const subtotal = body.itens?.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0) || 0
-  const desconto = body.desconto || 0
+  const parsed = vendaSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
+
+  const { itens, desconto = 0, ...vendaData } = parsed.data
+  const subtotal = itens?.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0) || 0
 
   const { data: venda, error } = await supabase.from('vendas').insert([{
-    cliente_id: body.cliente_id || null,
-    tipo_venda: body.tipo_venda || 'balcao',
-    os_id: body.os_id || null,
+    ...vendaData,
     subtotal,
-    desconto,
     total: subtotal - desconto,
-    forma_pagamento: body.forma_pagamento || null,
     status: 'concluida',
-    observacoes: body.observacoes || null,
   }]).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Inserir itens e atualizar estoque
-  if (body.itens && body.itens.length > 0) {
-    const itensData = body.itens.map((item: any) => ({
+  if (itens && itens.length > 0) {
+    const itensData = itens.map(item => ({
       venda_id: venda.id,
       produto_id: item.produto_id,
       quantidade: item.quantidade,
@@ -50,8 +50,7 @@ export async function POST(request: Request) {
     }))
     await supabase.from('venda_itens').insert(itensData)
 
-    // Atualizar estoque
-    for (const item of body.itens) {
+    for (const item of itens) {
       if (item.produto_id) {
         const { data: produto } = await supabase.from('produtos').select('estoque_atual').eq('id', item.produto_id).single()
         if (produto) {

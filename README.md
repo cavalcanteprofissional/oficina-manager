@@ -1,10 +1,10 @@
 # 🚀 Oficina Manager
 
-**Versão:** 1.0.0
+**Versão:** 1.1.0
 
-Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiva (PWA) construída com Next.js 15, Supabase e Tailwind CSS.
+Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiva (PWA) construída com Next.js 16, Supabase e Tailwind CSS.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -15,10 +15,11 @@ Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiv
 
 | Tecnologia | Descrição |
 |------------|-----------|
-| Next.js 15 | Framework React com App Router |
+| Next.js 16 | Framework React com App Router + Turbopack |
 | React 19 | Biblioteca de UI |
-| Tailwind CSS | Framework de estilização |
+| Tailwind CSS v4 | Framework de estilização |
 | Supabase | Banco de dados PostgreSQL + Auth + Storage |
+| Zod | Validação de schemas nas APIs |
 | TypeScript | Tipagem estática |
 | Vercel | Hospedagem |
 
@@ -35,23 +36,23 @@ Sistema completo de gestão para oficinas mecânicas. Aplicação web progressiv
 - ✅ Serviços (mão de obra)
 
 ### Operações
-- ✅ Ordens de Serviço (OS)
-- ✅ Vendas no balcão
-- ✅ Controle de estoque
-- ✅ Agendamentos
-- ✅ Dashboard
+- ✅ Ordens de Serviço (OS) com itens (produtos + serviços)
+- ✅ Vendas no balcão (carrinho + baixa automática de estoque)
+- ✅ Controle de estoque (movimentações, histórico, alertas)
+- ✅ Agendamentos (calendário com status)
+- ✅ Dashboard (estatísticas)
 
 ### Financeiro
-- ✅ Contas a Pagar
-- ✅ Contas a Receber
-- ✅ Controle de Caixa
+- ✅ Contas a Pagar (juros, multa, baixa)
+- ✅ Contas a Receber (recebimento parcial)
+- ✅ Controle de Caixa (entradas, saídas, suprimento, sangria)
 
 ### Extras
-- ✅ Relatórios
-- ✅ Reajuste de preços em massa
-- ✅ PWA (instalável)
+- ✅ Relatórios (aniversariantes, top produtos/serviços, resumo)
+- ✅ Reajuste de preços em massa (percentual ou valor fixo)
+- ✅ PWA (instalável com service worker)
 - ✅ Consulta automática de CEP (VIACEP)
-- ✅ Sistema de gestão de usuários com roles
+- ✅ Sistema de gestão de usuários com 5 roles
 
 ---
 
@@ -103,15 +104,21 @@ npm start
 ```
 src/
 ├── app/
-│   ├── (auth)/          # Login, Registro
-│   ├── dashboard/       # Páginas protegidas (rotas /dashboard/*)
-│   └── api/            # API Routes
+│   ├── (auth)/           # Login, Registro
+│   ├── dashboard/        # 17 páginas protegidas (/dashboard/*)
+│   └── api/              # 14 API Routes com validação Zod
 ├── components/
-│   ├── ui/             # Componentes base (Button, Input, CEPInput, etc)
-│   └── layout/         # Sidebar, BottomNavigation
-└── lib/
-    ├── supabase/       # Cliente/Server Supabase, scripts SQL
-    └── utils/          # Utilitários (CEP, usuario, etc)
+│   ├── ui/               # Button, Input, Modal, Toast, DataTable, SelectSearch, etc
+│   ├── tables/           # DataTable genérico (paginação, ordenação, busca)
+│   └── layout/           # Sidebar, BottomNavigation, AuthCheck
+├── hooks/                # useSupabaseQuery, usePagination
+├── types/                # Tipos TypeScript (database.ts)
+├── lib/
+│   ├── supabase/         # Cliente/Server Supabase
+│   ├── schemas.ts        # Schemas Zod para validação
+│   ├── api-utils.ts      # Helpers para API routes
+│   └── utils/            # CEP, permissões de usuário
+└── middleware.ts          # Proteção server-side de rotas
 ```
 
 ---
@@ -145,15 +152,13 @@ Obtenha o ID do usuário em: Supabase Dashboard → Authentication → Users
 
 ---
 
----
-
 ## 📱 PWA
 
 O app pode ser instalado como aplicativo nativo:
 
 1. Acesse pelo navegador (Chrome/Safari)
 2. Toque em "Adicionar à tela inicial"
-3. Use offline (funcionalidades básicas)
+3. Service worker registrado com cache-first para assets estáticos
 
 ---
 
