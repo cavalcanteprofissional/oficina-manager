@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { estoqueSchema } from '@/lib/schemas'
+import { TIPOS_MOVIMENTO_ESTOQUE } from '@/lib/constants'
 
 export async function GET(request: Request) {
   const supabase = await createClient()

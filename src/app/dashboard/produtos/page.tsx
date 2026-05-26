@@ -34,20 +34,33 @@ export default function ProdutosPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Produto | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchProdutos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('produtos')
-      .select('*')
-      .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
-      .order('nome')
-    if (data) setProdutos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('produtos')
+        .select('*')
+        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setProdutos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar produtos')
+    }
     setLoading(false)
   }
 
-  useEffect(() => { fetchProdutos() }, [search])
+  useEffect(() => {
+    let mounted = true
+    fetchProdutos()
+    return () => {
+      mounted = false
+    }
+  }, [search])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -105,6 +118,12 @@ export default function ProdutosPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="relative">
@@ -136,25 +155,29 @@ export default function ProdutosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {produtos.map((p) => (
-                    <tr key={p.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-sm text-gray-900">{p.codigo}</td>
-                      <td className="py-3 px-4 text-gray-900">{p.nome}</td>
-                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_custo)}</td>
-                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_venda)}</td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1 text-gray-900">
-                          {p.estoque_atual <= p.estoque_minimo && <AlertTriangle size={14} className="text-yellow-500" />}
-                          {p.estoque_atual}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-900">{p.categoria || '-'}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => { setEditing(p); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(p.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {produtos.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    produtos.map((p) => (
+                      <tr key={p.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-mono text-sm text-gray-900">{p.codigo}</td>
+                        <td className="py-3 px-4 text-gray-900">{p.nome}</td>
+                        <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_custo)}</td>
+                        <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(p.preco_venda)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1 text-gray-900">
+                            {p.estoque_atual <= p.estoque_minimo && <AlertTriangle size={14} className="text-yellow-500" />}
+                            {p.estoque_atual}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-gray-900">{p.categoria || '-'}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => { setEditing(p); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(p.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -37,26 +37,51 @@ export default function VeiculosPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Veiculo | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchVeiculos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('veiculos')
-      .select('*, clientes(nome)')
-      .or(`placa.ilike.%${search}%,marca.ilike.%${search}%,modelo.ilike.%${search}%`)
-      .order('placa')
-    if (data) setVeiculos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('veiculos')
+        .select('*, clientes(nome)')
+        .or(`placa.ilike.%${search}%,marca.ilike.%${search}%,modelo.ilike.%${search}%`)
+        .order('placa')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setVeiculos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar veículos')
+    }
     setLoading(false)
   }
 
   const fetchClientes = async () => {
-    const { data } = await supabase.from('clientes').select('id, nome').order('nome')
-    if (data) setClientes(data)
+    try {
+      const { data, error: supabaseError } = await supabase.from('clientes').select('id, nome').order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setClientes(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar clientes')
+    }
   }
 
-  useEffect(() => { fetchVeiculos() }, [search])
-  useEffect(() => { if (showModal) fetchClientes() }, [showModal])
+  useEffect(() => {
+    let mounted = true
+    fetchVeiculos()
+    return () => {
+      mounted = false
+    }
+  }, [search])
+  useEffect(() => {
+    if (!showModal) return
+    let mounted = true
+    fetchClientes()
+    return () => {
+      mounted = false
+    }
+  }, [showModal])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -100,6 +125,12 @@ export default function VeiculosPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="relative">
@@ -129,18 +160,22 @@ export default function VeiculosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {veiculos.map((v) => (
-                    <tr key={v.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-gray-900">{v.placa}</td>
-                      <td className="py-3 px-4 text-gray-900">{v.marca} {v.modelo}</td>
-                      <td className="py-3 px-4 text-gray-900">{v.ano_fabricacao}/{v.ano_modelo}</td>
-                      <td className="py-3 px-4 text-gray-900">{(v as any).clientes?.nome || '-'}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => { setEditing(v); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(v.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {veiculos.length === 0 ? (
+                    <tr><td colSpan={5} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    veiculos.map((v) => (
+                      <tr key={v.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-mono text-gray-900">{v.placa}</td>
+                        <td className="py-3 px-4 text-gray-900">{v.marca} {v.modelo}</td>
+                        <td className="py-3 px-4 text-gray-900">{v.ano_fabricacao}/{v.ano_modelo}</td>
+                        <td className="py-3 px-4 text-gray-900">{v.clientes?.nome || '-'}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => { setEditing(v); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(v.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

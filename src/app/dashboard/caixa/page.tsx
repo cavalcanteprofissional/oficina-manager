@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { TIPOS_MOVIMENTO_CAIXA } from '@/lib/constants'
 import { Plus, Loader2, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 
 interface Movimento {
@@ -24,6 +25,7 @@ export default function CaixaPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [saldo, setSaldo] = useState(0)
   const [entradas, setEntradas] = useState(0)
   const [saidas, setSaidas] = useState(0)
@@ -31,24 +33,36 @@ export default function CaixaPage() {
 
   const fetchMovimentos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('caixa_movimentos')
-      .select('*')
-      .order('data_movimento', { ascending: false })
-      .limit(50)
-    
-    if (data) {
-      setMovimentos(data)
-      const ent = data.filter(m => m.tipo_movimento === 'entrada' || m.tipo_movimento === 'suprimento').reduce((acc, m) => acc + m.valor, 0)
-      const sai = data.filter(m => m.tipo_movimento === 'saida' || m.tipo_movimento === 'sangria').reduce((acc, m) => acc + m.valor, 0)
-      setEntradas(ent)
-      setSaidas(sai)
-      setSaldo(ent - sai)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('caixa_movimentos')
+        .select('*')
+        .order('data_movimento', { ascending: false })
+        .limit(50)
+      
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) {
+        setMovimentos(data)
+        const ent = data.filter(m => ['entrada', 'suprimento'].includes(m.tipo_movimento)).reduce((acc, m) => acc + m.valor, 0)
+        const sai = data.filter(m => ['saida', 'sangria'].includes(m.tipo_movimento)).reduce((acc, m) => acc + m.valor, 0)
+        setEntradas(ent)
+        setSaidas(sai)
+        setSaldo(ent - sai)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar movimentos')
     }
     setLoading(false)
   }
 
-  useEffect(() => { fetchMovimentos() }, [])
+  useEffect(() => {
+    let mounted = true
+    fetchMovimentos()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -80,6 +94,12 @@ export default function CaixaPage() {
           <Plus size={18} className="mr-2" /> Nova Movimentação
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -153,22 +173,20 @@ export default function CaixaPage() {
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs ${
-                          m.tipo_movimento === 'entrada' || m.tipo_movimento === 'suprimento'
+                          ['entrada', 'suprimento'].includes(m.tipo_movimento)
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {m.tipo_movimento === 'entrada' ? 'Entrada' :
-                           m.tipo_movimento === 'saida' ? 'Saída' :
-                           m.tipo_movimento === 'suprimento' ? 'Suprimento' : 'Sangria'}
+                          {TIPOS_MOVIMENTO_CAIXA[m.tipo_movimento as keyof typeof TIPOS_MOVIMENTO_CAIXA]?.label || m.tipo_movimento}
                         </span>
                       </td>
                       <td className="py-3 px-4">{m.descricao}</td>
                       <td className={`py-3 px-4 text-right font-medium ${
-                        m.tipo_movimento === 'entrada' || m.tipo_movimento === 'suprimento'
+                        ['entrada', 'suprimento'].includes(m.tipo_movimento)
                           ? 'text-green-600'
                           : 'text-red-600'
                       }`}>
-                        {m.tipo_movimento === 'entrada' || m.tipo_movimento === 'suprimento' ? '+' : '-'}
+                        {['entrada', 'suprimento'].includes(m.tipo_movimento) ? '+' : '-'}
                         {formatCurrency(m.valor)}
                       </td>
                       <td className="py-3 px-4 text-right font-medium">
@@ -194,10 +212,9 @@ export default function CaixaPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-1">Tipo *</label>
                 <select name="tipo_movimento" required className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="entrada">Entrada</option>
-                  <option value="saida">Saída</option>
-                  <option value="suprimento">Suprimento</option>
-                  <option value="sangria">Sangria</option>
+                  {Object.entries(TIPOS_MOVIMENTO_CAIXA).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
               </div>
               <Input label="Descrição *" name="descricao" required />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -27,7 +27,7 @@ import { Role, PERMISSOES_POR_ROLE } from '@/lib/utils/usuario'
 interface MenuItem {
   name: string
   href: string
-  icon: any
+  icon: React.ComponentType<{ size?: number }>
   key: string
 }
 

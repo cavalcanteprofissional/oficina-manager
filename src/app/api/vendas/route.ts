@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   const { itens, desconto = 0, ...vendaData } = parsed.data
-  const subtotal = itens?.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0) || 0
+  const subtotal = itens?.reduce((acc, item) => acc + (item.valor_total || 0), 0) || 0
 
   const { data: venda, error } = await supabase.from('vendas').insert([{
     ...vendaData,
@@ -50,13 +50,21 @@ export async function POST(request: Request) {
     }))
     await supabase.from('venda_itens').insert(itensData)
 
-    for (const item of itens) {
-      if (item.produto_id) {
-        const { data: produto } = await supabase.from('produtos').select('estoque_atual').eq('id', item.produto_id).single()
-        if (produto) {
-          await supabase.from('produtos').update({ 
-            estoque_atual: (produto.estoque_atual || 0) - item.quantidade 
-          }).eq('id', item.produto_id)
+    const produtoIds = itens.filter(i => i.produto_id).map(i => i.produto_id!)
+    if (produtoIds.length > 0) {
+      const { data: produtos } = await supabase
+        .from('produtos')
+        .select('id, estoque_atual')
+        .in('id', produtoIds)
+
+      if (produtos) {
+        for (const produto of produtos) {
+          const item = itens.find(i => i.produto_id === produto.id)
+          if (item) {
+            await supabase.from('produtos').update({
+              estoque_atual: (produto.estoque_atual || 0) - item.quantidade
+            }).eq('id', produto.id)
+          }
         }
       }
     }

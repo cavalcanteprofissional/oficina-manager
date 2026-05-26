@@ -36,6 +36,7 @@ export default function FornecedoresPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Fornecedor | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const handleCepFound = (data: CEPResponse) => {
@@ -66,16 +67,28 @@ export default function FornecedoresPage() {
 
   const fetchFornecedores = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('fornecedores')
-      .select('*')
-      .or(`razao_social.ilike.%${search}%,cnpj.ilike.%${search}%`)
-      .order('razao_social')
-    if (data) setFornecedores(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('fornecedores')
+        .select('*')
+        .or(`razao_social.ilike.%${search}%,cnpj.ilike.%${search}%`)
+        .order('razao_social')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setFornecedores(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar fornecedores')
+    }
     setLoading(false)
   }
 
-  useEffect(() => { fetchFornecedores() }, [search])
+  useEffect(() => {
+    let mounted = true
+    fetchFornecedores()
+    return () => {
+      mounted = false
+    }
+  }, [search])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -123,6 +136,12 @@ export default function FornecedoresPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="relative">
@@ -155,21 +174,25 @@ export default function FornecedoresPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {fornecedores.map((f) => (
-                    <tr key={f.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 text-gray-900">{f.razao_social}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.nome_fantasia || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.cnpj || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.email || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.telefone1}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.contato_nome || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{f.cidade || '-'}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => { setEditing(f); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(f.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {fornecedores.length === 0 ? (
+                    <tr><td colSpan={8} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    fornecedores.map((f) => (
+                      <tr key={f.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 text-gray-900">{f.razao_social}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.nome_fantasia || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.cnpj || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.email || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.telefone1}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.contato_nome || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{f.cidade || '-'}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => { setEditing(f); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(f.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

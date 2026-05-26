@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { CEPInput } from '@/components/ui/CEPInput'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react'
 import { CEPResponse } from '@/lib/utils/cep'
 
@@ -44,6 +44,7 @@ export default function ClientesPage() {
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
 
@@ -75,26 +76,41 @@ export default function ClientesPage() {
 
   const fetchClientes = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('*', { count: 'exact' })
-      .or(`nome.ilike.%${search}%,cpf_cnpj.ilike.%${search}%,telefone1.ilike.%${search}%`)
-      .order('nome')
-      .range((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit - 1)
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*', { count: 'exact' })
+        .or(`nome.ilike.%${search}%,cpf_cnpj.ilike.%${search}%,telefone1.ilike.%${search}%`)
+        .order('nome')
+        .range((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit - 1)
 
-    if (!error && data) {
-      setClientes(data)
+      if (!error && data) {
+        setClientes(data)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar clientes')
     }
     setLoading(false)
   }
 
   useEffect(() => {
-    if (pagination.page === 1) fetchClientes()
-    else setPagination(p => ({ ...p, page: 1 }))
+    let mounted = true
+    if (pagination.page === 1) {
+      fetchClientes()
+    } else {
+      setPagination(p => ({ ...p, page: 1 }))
+    }
+    return () => {
+      mounted = false
+    }
   }, [search])
 
   useEffect(() => {
+    let mounted = true
     fetchClientes()
+    return () => {
+      mounted = false
+    }
   }, [pagination.page])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {

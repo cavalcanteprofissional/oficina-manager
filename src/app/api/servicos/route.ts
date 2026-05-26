@@ -24,7 +24,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
-  const { data, error } = await supabase.from('servicos').insert([body]).select().single()
+  const parsed = servicoSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
+  const { data, error } = await supabase.from('servicos').insert([parsed.data]).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json(data, { status: 201 })
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Plus, Loader2, X, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
+import { STATUS_CONTA } from '@/lib/constants'
 
 interface Cliente {
   id: string
@@ -39,29 +40,54 @@ export default function ContasReceberPage() {
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<ContaReceber | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchContas = async () => {
     setLoading(true)
-    let query = supabase
-      .from('contas_receber')
-      .select('*, clientes(nome)')
-      .order('data_vencimento')
+    setError(null)
+    try {
+      let query = supabase
+        .from('contas_receber')
+        .select('*, clientes(nome)')
+        .order('data_vencimento')
 
-    if (statusFilter) query = query.eq('status', statusFilter)
+      if (statusFilter) query = query.eq('status', statusFilter)
 
-    const { data } = await query
-    if (data) setContas(data)
+      const { data, error: supabaseError } = await query
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setContas(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar contas')
+    }
     setLoading(false)
   }
 
   const fetchClientes = async () => {
-    const { data } = await supabase.from('clientes').select('id, nome').order('nome')
-    if (data) setClientes(data)
+    try {
+      const { data, error: supabaseError } = await supabase.from('clientes').select('id, nome').order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setClientes(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar clientes')
+    }
   }
 
-  useEffect(() => { fetchContas() }, [statusFilter])
-  useEffect(() => { if (showModal) fetchClientes() }, [showModal])
+  useEffect(() => {
+    let mounted = true
+    fetchContas()
+    return () => {
+      mounted = false
+    }
+  }, [statusFilter])
+  useEffect(() => {
+    if (!showModal) return
+    let mounted = true
+    fetchClientes()
+    return () => {
+      mounted = false
+    }
+  }, [showModal])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -133,7 +159,7 @@ export default function ContasReceberPage() {
       </div>
 
       <div className="flex gap-2 mb-4">
-        {['', 'pendente', 'recebido', 'atrasado'].map((status) => (
+        {['', ...Object.keys(STATUS_CONTA).filter(s => s !== 'cancelado')].map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
@@ -141,10 +167,16 @@ export default function ContasReceberPage() {
               statusFilter === status ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            {status === '' ? 'Todos' : status.charAt(0).toUpperCase() + status.slice(1)}
+            {status === '' ? 'Todos' : STATUS_CONTA[status as keyof typeof STATUS_CONTA].label}
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0">
@@ -164,41 +196,43 @@ export default function ContasReceberPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {contas.map((conta) => {
-                    const isAtrasado = conta.status === 'pendente' && conta.data_vencimento < hoje
-                    return (
-                      <tr key={conta.id} className={`border-b hover:bg-gray-50 ${isAtrasado ? 'bg-red-50' : ''}`}>
-                        <td className="py-3 px-4">
-                          <div>{conta.descricao}</div>
-                          {conta.documento && <div className="text-xs text-gray-800">Doc: {conta.documento}</div>}
-                        </td>
-                        <td className="py-3 px-4">{(conta as any).clientes?.nome || '-'}</td>
-                        <td className="py-3 px-4">
-                          {new Date(conta.data_vencimento).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="py-3 px-4 text-right font-medium">{formatCurrency(conta.valor)}</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            conta.status === 'recebido' ? 'bg-green-100 text-green-800' :
-                            isAtrasado ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {conta.status === 'recebido' ? 'Recebido' : isAtrasado ? 'Atrasado' : 'Pendente'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button onClick={() => handleEdit(conta)} className="text-blue-600 hover:text-blue-800 mr-3">
-                            <Edit2 size={18} />
-                          </button>
-                          {conta.status === 'pendente' && (
-                            <Button size="sm" variant="outline" onClick={() => receberConta(conta)}>
-                              <CheckCircle size={14} className="mr-1" /> Receber
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {contas.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    contas.map((conta) => {
+                      const isAtrasado = conta.status === 'pendente' && conta.data_vencimento < hoje
+                      return (
+                        <tr key={conta.id} className={`border-b hover:bg-gray-50 ${isAtrasado ? 'bg-red-50' : ''}`}>
+                          <td className="py-3 px-4">
+                            <div>{conta.descricao}</div>
+                            {conta.documento && <div className="text-xs text-gray-800">Doc: {conta.documento}</div>}
+                          </td>
+                          <td className="py-3 px-4">{conta.clientes?.nome || '-'}</td>
+                          <td className="py-3 px-4">
+                            {new Date(conta.data_vencimento).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="py-3 px-4 text-right font-medium">{formatCurrency(conta.valor)}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              STATUS_CONTA[isAtrasado ? 'atrasado' : conta.status as keyof typeof STATUS_CONTA].color
+                            }`}>
+                              {STATUS_CONTA[isAtrasado ? 'atrasado' : conta.status as keyof typeof STATUS_CONTA].label}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button onClick={() => handleEdit(conta)} className="text-blue-600 hover:text-blue-800 mr-3">
+                              <Edit2 size={18} />
+                            </button>
+                            {conta.status === 'pendente' && (
+                              <Button size="sm" variant="outline" onClick={() => receberConta(conta)}>
+                                <CheckCircle size={14} className="mr-1" /> Receber
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

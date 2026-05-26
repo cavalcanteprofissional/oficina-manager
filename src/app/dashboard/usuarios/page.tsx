@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Plus, Search, Edit2, Trash2, X, Loader2, UserPlus, RefreshCw } from 'lucide-react'
+import { Card, CardHeader, CardContent } from '@/components/ui/Card'
+import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 import { Usuario, Role, ROLE_LABELS, ROLE_COLORS } from '@/lib/utils/usuario'
 
 interface Pagination {
@@ -25,27 +26,39 @@ export default function UsuariosPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null)
   const [saving, setSaving] = useState(false)
+  const { addToast } = useToast()
   const supabase = createClient()
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = async (signal?: AbortSignal) => {
     setLoading(true)
     const params = new URLSearchParams()
     params.set('page', pagination.page.toString())
     params.set('limit', pagination.limit.toString())
     if (search) params.set('search', search)
 
-    const response = await fetch(`/api/usuarios?${params}`)
-    const result = await response.json()
+    try {
+      const response = await fetch(`/api/usuarios?${params}`, { signal })
+      const result = await response.json()
 
-    if (result.data) {
-      setUsuarios(result.data)
-      setPagination(prev => ({ ...prev, ...result.pagination }))
+      if (result.data) {
+        setUsuarios(result.data)
+        setPagination(prev => ({ ...prev, ...result.pagination }))
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+      addToast('error', 'Erro ao carregar usuários', 'Tente novamente')
     }
     setLoading(false)
   }
 
   useEffect(() => {
-    fetchUsuarios()
+    const abortController = new AbortController()
+    let mounted = true
+    fetchUsuarios(abortController.signal).finally(() => { if (mounted) return })
+    return () => {
+      mounted = false
+      abortController.abort('Componente desmontado')
+    }
   }, [search, pagination.page])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,18 +66,19 @@ export default function UsuariosPage() {
     setSaving(true)
     
     const formData = new FormData(e.currentTarget)
-    const usuarioData: Record<string, any> = {
-      nome: formData.get('nome'),
-      email: formData.get('email') || null,
-      senha: formData.get('senha') || null,
-      cpf: formData.get('cpf') || null,
-      telefone: formData.get('telefone') || null,
-      role: formData.get('role'),
-      ativo: formData.get('ativo') === 'on',
+    const raw = Object.fromEntries(formData)
+    const usuarioData: { nome: string; email: string | null; senha: string | null; cpf: string | null; telefone: string | null; role: string; ativo: boolean } = {
+      nome: raw.nome as string,
+      email: (raw.email as string) || null,
+      senha: (raw.senha as string) || null,
+      cpf: (raw.cpf as string) || null,
+      telefone: (raw.telefone as string) || null,
+      role: raw.role as string,
+      ativo: raw.ativo === 'on',
     }
 
     if (!editingUsuario && !usuarioData.senha) {
-      alert('Senha é obrigatória para novos usuários')
+      addToast('error', 'Erro de validação', 'Senha é obrigatória para novos usuários')
       setSaving(false)
       return
     }
@@ -83,7 +97,7 @@ export default function UsuariosPage() {
     setSaving(false)
 
     if (!response.ok) {
-      alert(result.error || 'Erro ao salvar usuário')
+      addToast('error', 'Erro ao salvar', result.error || 'Erro ao salvar usuário')
       return
     }
 

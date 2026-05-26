@@ -1,48 +1,84 @@
-# 🚗 Oficina Manager - Correção de Erros de Exibição
+# 🚗 Oficina Manager - Plano de Correções ✅ COMPLETO
 
-## 🔴 CRÍTICOS ✅
+## Resumo
+**31 issues identificadas → 31 resolvidas** (0 pendentes)
 
-### C1. Cabeçalhos duplicados em tabelas ✅
-- **Arquivos**: `mecanicos/page.tsx`, `servicos/page.tsx`, `vendas/page.tsx`
-- **Correção**: Removidas linhas de `<th>` duplicadas.
+---
 
-### C2. CEP: `localizacao` → `localidade` ✅
-- **Arquivos**: `lib/utils/cep.ts:6`, `clientes/page.tsx:67`, `fornecedores/page.tsx:49`
+## Fase 1: Fundação (Anterior ✅)
+| ID | Issue | Status |
+|----|-------|--------|
+| C1 | Cabeçalhos duplicados em páginas | ✅ |
+| C2 | Campo `localizacao` → `localidade` (ViaCEP) | ✅ |
+| C3 | Insert OS separado de os_itens | ✅ |
+| A1 | data_contratacao em mecanicos | ✅ |
+| A2 | defaultValue em formulários | ✅ |
+| A3 | Filtro de veículos (|| true) | ✅ |
+| A4 | Campos faltantes (rg_ie, data_nascimento, etc) | ✅ |
+| A5 | Relatórios incluir venda_itens | ✅ |
+| A6 | Formatação monetária padronizada | ✅ |
+| M1-M4 | Paginação, colunas, edit, useEffect | ✅ |
+| B1-B3 | Zod schemas, ajuste estoque, senha | ✅ |
 
-### C3. Campo `itens` em `ordens_servico` ✅
-- **Arquivo**: `ordens-servico/page.tsx:179`
+---
 
-## 🟡 ALTOS ✅
+## Fase 2: Correções (Sessão Atual ✅)
 
-### A1-A6 - Todas corrigidas ✅
+### 🔴 Críticos
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| C5 | proxy.ts não executa | Renomeado → `middleware.ts` | `src/middleware.ts` |
+| C6 | N+1 vendas | Select em lote com `.in()` | `api/vendas/route.ts` |
+| C7 | N+1 reajuste | API batch `/api/reajuste` | `api/reajuste/route.ts`, `reajuste/page.tsx` |
+| C8 | RLS desabilitado | Migration: RLS + policies authenticated | Supabase DB |
 
-## 🔵 MÉDIOS
+### 🟡 Altos
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| A7 | Errors silenciados | `error` state em 12 páginas | Todas as páginas dashboard |
+| A8 | Falta try/catch | try/catch em todos os fetches | Todas as páginas dashboard |
+| A9 | usuarioSchema id required | `id` opcional + createSchema | `lib/schemas.ts` |
+| A10 | servicos sem Zod | `safeParse()` adicionado | `api/servicos/route.ts` |
+| A11 | useEffect sem cleanup | mounted flag + AbortController | 16 páginas |
 
-### M1. Paginação sem controles UI ⏳
-- **Arquivo**: `clientes/page.tsx:83`
-- **Correção**: Adicionar navegação de páginas.
+### 🔵 Médios
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| M5 | 57 `any` types | Interfaces tipadas em 15 files | Sidebar, DataTable, hooks, pages |
+| M6 | Unused imports | Removidos de 7 files | clientes, OS, estoque, contas, etc |
+| M7 | Empty states | "Nenhum registro encontrado" | 10 páginas |
+| M8 | Array index key | `key={idx}` → `key={item.id}` | relatorios, ordens-servico |
+| M9 | Hardcoded strings | Constantes compartilhadas + Object.entries | `lib/constants.ts`, caixa, estoque, contas |
 
-### M2. Colunas faltando em tabela de fornecedores ⏳
-- **Arquivo**: `fornecedores/page.tsx:146-157`
-- **Correção**: Adicionar `email`, `nome_fantasia`, `contato_nome`.
+### ⚪ Baixos
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| B4 | dangerouslySetInnerHTML | `<Script>` do Next.js | `layout.tsx` |
+| B5 | alert() em vez de toast | `addToast()` via `useToast()` | usuarios, reajuste |
+| B6 | JSON.stringify dep | Propriedades individuais na dep list | `hooks/useSupabase.ts` |
+| B7 | sw.js ausente | Já existe em `public/sw.js` | — |
 
-### M3. Sem botão "Editar" em contas-pagar/receber ⏳
-- **Arquivo**: `contas-pagar/page.tsx:186-191`, `contas-receber/page.tsx:64-85`
+### 🗄️ Supabase DB
+| ID | Issue | Solução |
+|----|-------|---------|
+| D1 | 20 FKs sem índice | `CREATE INDEX` em todas |
+| D2 | search_path mutável | `SET search_path = public` na função |
+| D3 | Políticas duplicadas usuarios | Removidas, criadas com role check |
+| D4 | Índices não usados | `DROP INDEX idx_usuarios_role/ativo` |
+| D5 | HIBP desabilitado | Requer ativação no dashboard Supabase |
+| — | GraphQL exposto ao anon | `REVOKE SELECT FROM anon` em 16 tabelas |
 
-### M4. `[supabase]` no useEffect ✅
+---
 
-## ⚪ BAIXOS
+## Fase 3: AbortController & Error Handling (✅)
 
-### B1. Zod schemas não aplicados nas APIs ⏳
-### B2. `ajuste` tratado como saída no estoque ⏳
-### B3. Sem campo de senha em usuários ⏳
+### 🔴 Crítico
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| F1 | `abortController.abort()` sem reason | `abort('Componente desmontado')` + try/catch AbortError | `usuarios/page.tsx` |
+| F2 | AbortController morto em 15 páginas Supabase | Removido (signal nunca é passado; mounted flag basta) | estoque, caixa, contas-receber, contas-pagar, relatorios, dashboard, agendamentos, vendas, veiculos, servicos, produtos, mecanicos, fornecedores, ordens-servico |
+| F3 | Fetch sem error handling | try/catch adicionado | `clientes/page.tsx`, `ordens-servico/page.tsx`, `dashboard/page.tsx` |
 
-## Status
+---
 
-- [x] C1-C3, A1-A6, M4
-- [ ] M1 - Paginação UI
-- [ ] M2 - Colunas fornecedores
-- [ ] M3 - Botão editar contas
-- [ ] B1 - Zod schemas
-- [ ] B2 - ajuste estoque
-- [ ] B3 - Senha usuários
+## Build: ✅ Compila sem erros

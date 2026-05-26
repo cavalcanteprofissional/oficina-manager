@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Loader2, RefreshCw, Search } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 
 interface Produto {
   id: string
@@ -23,6 +24,7 @@ export default function ReajustePrecosPage() {
   const [tipoReajuste, setTipoReajuste] = useState<'percentual' | 'valor'>('percentual')
   const [valorReajuste, setValorReajuste] = useState('')
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
+  const { addToast } = useToast()
   const supabase = createClient()
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function ReajustePrecosPage() {
     setSaving(true)
     const produtosSelecionados = produtos.filter(p => selecionados.has(p.id))
     
-    for (const produto of produtosSelecionados) {
+    const updates = produtosSelecionados.map(produto => {
       let novoPreco = produto.preco_venda
       
       if (tipoReajuste === 'percentual') {
@@ -79,18 +81,33 @@ export default function ReajustePrecosPage() {
         novoPreco = produto.preco_venda + parseFloat(valorReajuste)
       }
       
-      // Arredondar para 2 casas decimais
       novoPreco = Math.round(novoPreco * 100) / 100
       
-      // Calcular nova margem
       const novaMargem = produto.preco_custo > 0 
         ? ((novoPreco - produto.preco_custo) / produto.preco_custo) * 100 
         : 0
       
-      await supabase.from('produtos').update({
-        preco_venda: novoPreco,
-        margem_lucro: novaMargem
-      }).eq('id', produto.id)
+      return {
+        id: produto.id,
+        novo_preco: novoPreco,
+        nova_margem: Math.round(novaMargem * 100) / 100,
+      }
+    })
+    
+    try {
+      const res = await fetch('/api/reajuste', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produtos: updates }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        addToast('error', 'Erro ao aplicar reajuste', err.error)
+      } else {
+        addToast('success', `Reajuste aplicado em ${updates.length} produto(s)`)
+      }
+    } catch {
+      addToast('error', 'Erro de conexão', 'Não foi possível conectar ao servidor')
     }
     
     setSaving(false)

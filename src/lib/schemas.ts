@@ -210,7 +210,7 @@ export const caixaSchema = z.object({
 })
 
 export const usuarioSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().optional(),
   nome: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email().optional().or(z.literal('')).nullable(),
   senha: z.string().optional().nullable(),
@@ -218,4 +218,8 @@ export const usuarioSchema = z.object({
   telefone: z.string().optional().nullable(),
   role: z.enum(['admin', 'gerente', 'mecanico', 'caixa', 'comum']),
   ativo: z.boolean().optional(),
+})
+
+export const usuarioCreateSchema = usuarioSchema.extend({
+  senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 })

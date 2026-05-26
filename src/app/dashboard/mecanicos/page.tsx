@@ -26,20 +26,33 @@ export default function MecanicosPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Mecanico | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchMecanicos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('mecanicos')
-      .select('*')
-      .or(`nome.ilike.%${search}%,cpf.ilike.%${search}%`)
-      .order('nome')
-    if (data) setMecanicos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('mecanicos')
+        .select('*')
+        .or(`nome.ilike.%${search}%,cpf.ilike.%${search}%`)
+        .order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setMecanicos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar mecânicos')
+    }
     setLoading(false)
   }
 
-  useEffect(() => { fetchMecanicos() }, [search])
+  useEffect(() => {
+    let mounted = true
+    fetchMecanicos()
+    return () => {
+      mounted = false
+    }
+  }, [search])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -90,6 +103,12 @@ export default function MecanicosPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="relative">
@@ -120,23 +139,27 @@ export default function MecanicosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mecanicos.map((m) => (
-                    <tr key={m.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 text-gray-900">{m.nome}</td>
-                      <td className="py-3 px-4 text-gray-900">{m.cpf || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{m.telefone}</td>
-                      <td className="py-3 px-4 text-gray-900">{m.comissao_percentual || 0}%</td>
-                      <td className="py-3 px-4">
-                        <button onClick={() => toggleAtivo(m.id, m.ativo)} className={`px-2 py-1 rounded text-xs ${m.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {m.ativo ? 'Ativo' : 'Inativo'}
-                        </button>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => { setEditing(m); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(m.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {mecanicos.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    mecanicos.map((m) => (
+                      <tr key={m.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 text-gray-900">{m.nome}</td>
+                        <td className="py-3 px-4 text-gray-900">{m.cpf || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{m.telefone}</td>
+                        <td className="py-3 px-4 text-gray-900">{m.comissao_percentual || 0}%</td>
+                        <td className="py-3 px-4">
+                          <button onClick={() => toggleAtivo(m.id, m.ativo)} className={`px-2 py-1 rounded text-xs ${m.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {m.ativo ? 'Ativo' : 'Inativo'}
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => { setEditing(m); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(m.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -43,8 +43,8 @@ export default function DataTable<T>({
     const q = search.toLowerCase()
     return data.filter(item =>
       columns.some(col => {
-        const val = (item as any)[col.key]
-        return val != null && String(val).toLowerCase().includes(q)
+        const val = String((item as Record<string, unknown>)[col.key] ?? '')
+        return val.toLowerCase().includes(q)
       })
     )
   }, [data, search, columns])
@@ -52,8 +52,8 @@ export default function DataTable<T>({
   const sorted = useMemo(() => {
     if (!sortKey) return filtered
     return [...filtered].sort((a, b) => {
-      const aVal = (a as any)[sortKey]
-      const bVal = (b as any)[sortKey]
+      const aVal = (a as Record<string, unknown>)[sortKey] as string | number
+      const bVal = (b as Record<string, unknown>)[sortKey] as string | number
       if (aVal == null) return 1
       if (bVal == null) return -1
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
@@ -134,7 +134,7 @@ export default function DataTable<T>({
                 <tr key={keyExtractor(item)} className="border-b hover:bg-gray-50 transition-colors">
                   {columns.map(col => (
                     <td key={col.key} className={`px-4 py-3 text-sm text-gray-900 ${col.className || ''}`}>
-                      {col.render ? col.render(item) : (item as any)[col.key]}
+                      {col.render ? col.render(item) : (item as Record<string, unknown>)[col.key] as ReactNode}
                     </td>
                   ))}
                 </tr>

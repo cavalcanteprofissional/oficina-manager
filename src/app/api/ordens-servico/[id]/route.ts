@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   // Recalcular valor final se houver itens ou desconto
   if (body.itens) {
-    const valorTotal = body.itens.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0)
+    const valorTotal = body.itens.reduce((acc: number, item: { valor_total?: number }) => acc + (item.valor_total || 0), 0)
     body.valor_total = valorTotal
     body.valor_final = valorTotal - (body.desconto || 0)
   }
@@ -45,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (body.itens) {
     await supabase.from('os_itens').delete().eq('os_id', id)
     if (body.itens.length > 0) {
-      const itensData = body.itens.map((item: any) => ({
+      const itensData = body.itens.map((item: { tipo_item: string; item_id: string; descricao: string; quantidade: number; valor_unitario: number; desconto: number; valor_total?: number; mecanico_id?: string | null }) => ({
         os_id: id,
         tipo_item: item.tipo_item,
         item_id: item.item_id,

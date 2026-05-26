@@ -9,7 +9,7 @@ export function useSupabaseQuery<T>(
   table: string,
   options?: {
     columns?: string
-    filters?: Record<string, any>
+    filters?: Record<string, string | number | boolean | null>
     orderBy?: { column: string; ascending?: boolean }
     limit?: number
   }
@@ -46,7 +46,13 @@ export function useSupabaseQuery<T>(
       setData(result as T[])
     }
     setLoading(false)
-  }, [table, JSON.stringify(options)])
+  }, [
+    table,
+    options?.columns,
+    options?.orderBy?.column,
+    options?.orderBy?.ascending,
+    options?.limit,
+  ])
 
   useEffect(() => {
     fetchData()

@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Plus, Search, Loader2, AlertTriangle, History } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/Card'
+import { Search, Loader2, AlertTriangle, History } from 'lucide-react'
+import { TIPOS_MOVIMENTO_ESTOQUE } from '@/lib/constants'
 
 interface Produto {
   id: string
@@ -40,31 +41,50 @@ export default function EstoquePage() {
   const [movimentos, setMovimentos] = useState<Movimento[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchProdutos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('produtos')
-      .select('*, fornecedores(razao_social)')
-      .eq('ativo', true)
-      .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
-      .order('nome')
-    if (data) setProdutos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('produtos')
+        .select('*, fornecedores(razao_social)')
+        .eq('ativo', true)
+        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setProdutos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar produtos')
+    }
     setLoading(false)
   }
 
   const fetchMovimentos = async (produtoId: string) => {
-    const { data } = await supabase
-      .from('estoque_movimentos')
-      .select('*')
-      .eq('produto_id', produtoId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-    if (data) setMovimentos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('estoque_movimentos')
+        .select('*')
+        .eq('produto_id', produtoId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setMovimentos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar movimentações')
+    }
   }
 
-  useEffect(() => { fetchProdutos() }, [search])
+  useEffect(() => {
+    let mounted = true
+    fetchProdutos()
+    return () => {
+      mounted = false
+    }
+  }, [search])
 
   const handleOpenMovimento = (produto: Produto) => {
     setSelectedProduto(produto)
@@ -129,6 +149,12 @@ export default function EstoquePage() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <div className="mb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -161,31 +187,35 @@ export default function EstoquePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {produtos.map((p) => (
-                    <tr key={p.id} className={`border-b hover:bg-gray-50 ${p.estoque_atual <= p.estoque_minimo ? 'bg-yellow-50' : ''}`}>
-                      <td className="py-3 px-4 font-mono text-sm">{p.codigo}</td>
-                      <td className="py-3 px-4">
-                        <div>{p.nome}</div>
-                        <div className="text-xs text-gray-800">{p.categoria || '-'}</div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className={p.estoque_atual <= p.estoque_minimo ? 'text-yellow-600 font-bold' : ''}>
-                          {p.estoque_atual}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">{p.estoque_minimo}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(p.preco_custo)}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(p.preco_venda)}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => handleOpenMovimento(p)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <History size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {produtos.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    produtos.map((p) => (
+                      <tr key={p.id} className={`border-b hover:bg-gray-50 ${p.estoque_atual <= p.estoque_minimo ? 'bg-yellow-50' : ''}`}>
+                        <td className="py-3 px-4 font-mono text-sm">{p.codigo}</td>
+                        <td className="py-3 px-4">
+                          <div>{p.nome}</div>
+                          <div className="text-xs text-gray-800">{p.categoria || '-'}</div>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={p.estoque_atual <= p.estoque_minimo ? 'text-yellow-600 font-bold' : ''}>
+                            {p.estoque_atual}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">{p.estoque_minimo}</td>
+                        <td className="py-3 px-4 text-right">{formatCurrency(p.preco_custo)}</td>
+                        <td className="py-3 px-4 text-right">{formatCurrency(p.preco_venda)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => handleOpenMovimento(p)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <History size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -210,9 +240,9 @@ export default function EstoquePage() {
                   <div>
                     <label className="block text-sm text-gray-900 mb-1">Tipo</label>
                     <select name="tipo_movimento" required className="w-full px-3 py-2 border rounded-md">
-                      <option value="entrada">Entrada</option>
-                      <option value="saida">Saída</option>
-                      <option value="ajuste">Ajuste</option>
+                      {Object.entries(TIPOS_MOVIMENTO_ESTOQUE).map(([value, { label }]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -261,7 +291,7 @@ export default function EstoquePage() {
                               m.tipo_movimento === 'saida' ? 'bg-red-100 text-red-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {m.tipo_movimento}
+                              {TIPOS_MOVIMENTO_ESTOQUE[m.tipo_movimento as keyof typeof TIPOS_MOVIMENTO_ESTOQUE]?.label ?? m.tipo_movimento}
                             </span>
                           </td>
                           <td className="py-2 text-right">{m.quantidade}</td>

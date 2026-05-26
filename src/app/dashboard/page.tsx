@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
   TrendingUp, 
@@ -8,9 +8,7 @@ import {
   Car, 
   Wrench, 
   ShoppingCart,
-  ClipboardList,
-  Wallet,
-  Calendar
+  ClipboardList
 } from 'lucide-react'
 
 interface Stats {
@@ -20,6 +18,14 @@ interface Stats {
   produtos: number
   osAbertas: number
   vendasHoje: number
+}
+
+interface StatCard {
+  name: string
+  value: number
+  icon: React.ComponentType<{ size?: number; className?: string }>
+  color: string
+  format?: boolean
 }
 
 export default function DashboardPage() {
@@ -35,42 +41,54 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    let mounted = true
+
     const fetchStats = async () => {
-      const today = new Date().toISOString().split('T')[0]
+      try {
+        const today = new Date().toISOString().split('T')[0]
 
-      const [
-        { count: clientes },
-        { count: veiculos },
-        { count: mecanicos },
-        { count: produtos },
-        { count: osAbertas },
-        { data: vendas }
-      ] = await Promise.all([
-        supabase.from('clientes').select('*', { count: 'exact', head: true }),
-        supabase.from('veiculos').select('*', { count: 'exact', head: true }),
-        supabase.from('mecanicos').select('*', { count: 'exact', head: true }).eq('ativo', true),
-        supabase.from('produtos').select('*', { count: 'exact', head: true }).eq('ativo', true),
-        supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).neq('status', 'concluida').neq('status', 'cancelada'),
-        supabase.from('vendas').select('total').gte('data_venda', today)
-      ])
+        const [
+          { count: clientes },
+          { count: veiculos },
+          { count: mecanicos },
+          { count: produtos },
+          { count: osAbertas },
+          { data: vendas }
+        ] = await Promise.all([
+          supabase.from('clientes').select('*', { count: 'exact', head: true }),
+          supabase.from('veiculos').select('*', { count: 'exact', head: true }),
+          supabase.from('mecanicos').select('*', { count: 'exact', head: true }).eq('ativo', true),
+          supabase.from('produtos').select('*', { count: 'exact', head: true }).eq('ativo', true),
+          supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).neq('status', 'concluida').neq('status', 'cancelada'),
+          supabase.from('vendas').select('total').gte('data_venda', today)
+        ])
 
-      const vendasHoje = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0
+        if (!mounted) return
 
-      setStats({
-        clientes: clientes || 0,
-        veiculos: veiculos || 0,
-        mecanicos: mecanicos || 0,
-        produtos: produtos || 0,
-        osAbertas: osAbertas || 0,
-        vendasHoje
-      })
+        const vendasHoje = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0
+
+        setStats({
+          clientes: clientes || 0,
+          veiculos: veiculos || 0,
+          mecanicos: mecanicos || 0,
+          produtos: produtos || 0,
+          osAbertas: osAbertas || 0,
+          vendasHoje
+        })
+      } catch {
+        // silently ignore
+      }
       setLoading(false)
     }
 
     fetchStats()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
-  const statCards = [
+  const statCards: StatCard[] = [
     { name: 'Clientes', value: stats.clientes, icon: Users, color: 'bg-blue-500', format: false },
     { name: 'Veículos', value: stats.veiculos, icon: Car, color: 'bg-green-500', format: false },
     { name: 'Mecânicos', value: stats.mecanicos, icon: Wrench, color: 'bg-purple-500', format: false },
@@ -94,8 +112,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon
-          const displayValue = (card as any).format
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value as number)
+          const displayValue = card.format
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value)
             : card.value
           return (
             <div key={card.name} className="bg-white rounded-lg shadow p-6">

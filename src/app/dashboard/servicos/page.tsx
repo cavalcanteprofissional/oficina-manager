@@ -26,20 +26,33 @@ export default function ServicosPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Servico | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchServicos = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('servicos')
-      .select('*')
-      .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
-      .order('nome')
-    if (data) setServicos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('servicos')
+        .select('*')
+        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setServicos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar serviços')
+    }
     setLoading(false)
   }
 
-  useEffect(() => { fetchServicos() }, [search])
+  useEffect(() => {
+    let mounted = true
+    fetchServicos()
+    return () => {
+      mounted = false
+    }
+  }, [search])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -92,6 +105,12 @@ export default function ServicosPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="relative">
@@ -123,20 +142,24 @@ export default function ServicosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {servicos.map((s) => (
-                    <tr key={s.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-sm text-gray-900">{s.codigo}</td>
-                      <td className="py-3 px-4 text-gray-900">{s.nome}</td>
-                      <td className="py-3 px-4 text-gray-900">{s.categoria || '-'}</td>
-                      <td className="py-3 px-4 text-right text-gray-900">{formatTime(s.tempo_estimado)}</td>
-                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(s.preco_sugerido)}</td>
-                      <td className="py-3 px-4 text-right text-gray-900">{s.comissao_percentual || 0}%</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => { setEditing(s); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(s.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {servicos.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    servicos.map((s) => (
+                      <tr key={s.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-mono text-sm text-gray-900">{s.codigo}</td>
+                        <td className="py-3 px-4 text-gray-900">{s.nome}</td>
+                        <td className="py-3 px-4 text-gray-900">{s.categoria || '-'}</td>
+                        <td className="py-3 px-4 text-right text-gray-900">{formatTime(s.tempo_estimado)}</td>
+                        <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(s.preco_sugerido)}</td>
+                        <td className="py-3 px-4 text-right text-gray-900">{s.comissao_percentual || 0}%</td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => { setEditing(s); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(s.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

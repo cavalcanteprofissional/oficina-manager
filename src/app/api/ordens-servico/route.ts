@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   // Calcular valor total dos itens
   let valorTotal = 0
   if (parsed.data.itens && parsed.data.itens.length > 0) {
-    valorTotal = parsed.data.itens.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0)
+    valorTotal = parsed.data.itens.reduce((acc, item) => acc + (item.valor_total || 0), 0)
   }
   
   const osData = {
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
   // Inserir itens da OS
   if (parsed.data.itens && parsed.data.itens.length > 0) {
-    const itensData = parsed.data.itens.map((item: any) => ({
+    const itensData = parsed.data.itens.map(item => ({
       os_id: os.id,
       tipo_item: item.tipo_item,
       item_id: item.item_id,

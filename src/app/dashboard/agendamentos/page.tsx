@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Plus, Loader2, X, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/Card'
+import { Plus, Loader2, X, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 interface Cliente {
   id: string
@@ -57,6 +57,7 @@ export default function AgendamentosPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
@@ -69,32 +70,59 @@ export default function AgendamentosPage() {
   const supabase = createClient()
 
   const fetchAgendamentos = async () => {
-    const today = new Date().toISOString().split('T')[0]
-    const { data } = await supabase
-      .from('agendamentos')
-      .select('*, clientes(nome), veiculos(placa, modelo), servicos(nome), mecanicos(nome)')
-      .gte('data_agendamento', today)
-      .order('data_agendamento')
-      .order('hora_agendamento')
-    if (data) setAgendamentos(data)
+    setError(null)
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const { data, error: supabaseError } = await supabase
+        .from('agendamentos')
+        .select('*, clientes(nome), veiculos(placa, modelo), servicos(nome), mecanicos(nome)')
+        .gte('data_agendamento', today)
+        .order('data_agendamento')
+        .order('hora_agendamento')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setAgendamentos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar agendamentos')
+    }
     setLoading(false)
   }
 
   const fetchFormData = async () => {
-    const [clientesRes, veiculosRes, servicosRes, mecanicosRes] = await Promise.all([
-      supabase.from('clientes').select('id, nome').order('nome'),
-      supabase.from('veiculos').select('id, placa, modelo').order('placa'),
-      supabase.from('servicos').select('id, nome').eq('ativo', true).order('nome'),
-      supabase.from('mecanicos').select('id, nome').eq('ativo', true).order('nome'),
-    ])
-    if (clientesRes.data) setClientes(clientesRes.data)
-    if (veiculosRes.data) setVeiculos(veiculosRes.data)
-    if (servicosRes.data) setServicos(servicosRes.data)
-    if (mecanicosRes.data) setMecanicos(mecanicosRes.data)
+    try {
+      const [clientesRes, veiculosRes, servicosRes, mecanicosRes] = await Promise.all([
+        supabase.from('clientes').select('id, nome').order('nome'),
+        supabase.from('veiculos').select('id, placa, modelo').order('placa'),
+        supabase.from('servicos').select('id, nome').eq('ativo', true).order('nome'),
+        supabase.from('mecanicos').select('id, nome').eq('ativo', true).order('nome'),
+      ])
+      if (clientesRes.error) { setError(clientesRes.error.message); return }
+      if (veiculosRes.error) { setError(veiculosRes.error.message); return }
+      if (servicosRes.error) { setError(servicosRes.error.message); return }
+      if (mecanicosRes.error) { setError(mecanicosRes.error.message); return }
+      if (clientesRes.data) setClientes(clientesRes.data)
+      if (veiculosRes.data) setVeiculos(veiculosRes.data)
+      if (servicosRes.data) setServicos(servicosRes.data)
+      if (mecanicosRes.data) setMecanicos(mecanicosRes.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar dados do formulário')
+    }
   }
 
-  useEffect(() => { fetchAgendamentos() }, [])
-  useEffect(() => { if (showModal) fetchFormData() }, [showModal])
+  useEffect(() => {
+    let mounted = true
+    fetchAgendamentos()
+    return () => {
+      mounted = false
+    }
+  }, [])
+  useEffect(() => {
+    if (!showModal) return
+    let mounted = true
+    fetchFormData()
+    return () => {
+      mounted = false
+    }
+  }, [showModal])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -147,6 +175,12 @@ export default function AgendamentosPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-8"><Loader2 className="animate-spin" size={32} /></div>
       ) : Object.keys(agendamentosPorData).length === 0 ? (
@@ -175,15 +209,15 @@ export default function AgendamentosPage() {
                             {ag.status}
                           </span>
                         </div>
-                        <p className="font-medium">{(ag as any).clientes?.nome}</p>
+                        <p className="font-medium">{ag.clientes?.nome}</p>
                         <p className="text-sm text-gray-800">
-                          {(ag as any).veiculos?.placa} - {(ag as any).veiculos?.modelo}
+                          {ag.veiculos?.placa} - {ag.veiculos?.modelo}
                         </p>
-                        {(ag as any).servicos?.nome && (
-                          <p className="text-sm text-gray-700">{(ag as any).servicos?.nome}</p>
+                        {ag.servicos?.nome && (
+                          <p className="text-sm text-gray-700">{ag.servicos?.nome}</p>
                         )}
-                        {(ag as any).mecanicos?.nome && (
-                          <p className="text-sm text-gray-700">Mecânico: {(ag as any).mecanicos?.nome}</p>
+                        {ag.mecanicos?.nome && (
+                          <p className="text-sm text-gray-700">Mecânico: {ag.mecanicos?.nome}</p>
                         )}
                       </div>
                       <div className="flex gap-2">

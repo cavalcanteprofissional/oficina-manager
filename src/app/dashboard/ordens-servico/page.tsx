@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardContent } from '@/components/ui/Card'
-import { Plus, Search, Eye, Edit2, Trash2, X, Loader2, CheckCircle, XCircle, Clock, Wrench } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/Card'
+import { Plus, Search, Eye, Edit2, Trash2, X, Loader2 } from 'lucide-react'
 
 interface Cliente {
   id: string
@@ -46,7 +46,16 @@ interface OS {
   clientes?: Cliente
   veiculos?: Veiculo
   mecanicos?: Mecanico
-  os_itens?: any[]
+  os_itens?: {
+    id: string
+    tipo_item: string
+    descricao: string
+    quantidade: number
+    valor_unitario: number
+    valor_total: number
+    produtos?: { nome: string }
+    servicos?: { nome: string }
+  }[]
 }
 
 const statusColors: Record<string, string> = {
@@ -80,48 +89,73 @@ export default function OrdensServicoPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
-  const [produtos, setProdutos] = useState<any[]>([])
-  const [servicos, setServicos] = useState<any[]>([])
+  interface Produto { id: string; nome: string; preco_venda: number; estoque_atual: number }
+  interface Servico { id: string; nome: string; preco_sugerido: number | null }
+  interface OSItem { id?: string; tipo_item: string; item_id?: string; os_id?: string; descricao: string; quantidade: number; valor_unitario: number; desconto: number; valor_total?: number; mecanico_id?: string | null }
+
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [servicos, setServicos] = useState<Servico[]>([])
   
   // Dados do formulário
   const [selectedCliente, setSelectedCliente] = useState('')
   const [selectedVeiculo, setSelectedVeiculo] = useState('')
-  const [itens, setItens] = useState<any[]>([])
+  const [itens, setItens] = useState<OSItem[]>([])
   
   const supabase = createClient()
 
   const fetchOrdens = async () => {
     setLoading(true)
-    let query = supabase
-      .from('ordens_servico')
-      .select('*, clientes(nome), veiculos(placa, modelo, marca), mecanicos(nome)')
-      .order('data_abertura', { ascending: false })
+    try {
+      let query = supabase
+        .from('ordens_servico')
+        .select('*, clientes(nome), veiculos(placa, modelo, marca), mecanicos(nome)')
+        .order('data_abertura', { ascending: false })
 
-    if (statusFilter) query = query.eq('status', statusFilter)
-    if (search) query = query.ilike('numero_os', `%${search}%`)
+      if (statusFilter) query = query.eq('status', statusFilter)
+      if (search) query = query.ilike('numero_os', `%${search}%`)
 
-    const { data } = await query.limit(50)
-    if (data) setOrdens(data)
+      const { data } = await query.limit(50)
+      if (data) setOrdens(data)
+    } catch {
+      // silently ignore
+    }
     setLoading(false)
   }
 
   const fetchFormData = async () => {
-    const [clientesRes, veiculosRes, mecanicosRes, produtosRes, servicosRes] = await Promise.all([
-      supabase.from('clientes').select('id, nome').order('nome'),
-      supabase.from('veiculos').select('id, placa, modelo, marca, cliente_id').order('placa'),
-      supabase.from('mecanicos').select('id, nome').eq('ativo', true).order('nome'),
-      supabase.from('produtos').select('id, nome, preco_venda, estoque_atual').eq('ativo', true).order('nome'),
-      supabase.from('servicos').select('id, nome, preco_sugerido').eq('ativo', true).order('nome'),
-    ])
-    if (clientesRes.data) setClientes(clientesRes.data)
-    if (veiculosRes.data) setVeiculos(veiculosRes.data)
-    if (mecanicosRes.data) setMecanicos(mecanicosRes.data)
-    if (produtosRes.data) setProdutos(produtosRes.data)
-    if (servicosRes.data) setServicos(servicosRes.data)
+    try {
+      const [clientesRes, veiculosRes, mecanicosRes, produtosRes, servicosRes] = await Promise.all([
+        supabase.from('clientes').select('id, nome').order('nome'),
+        supabase.from('veiculos').select('id, placa, modelo, marca, cliente_id').order('placa'),
+        supabase.from('mecanicos').select('id, nome').eq('ativo', true).order('nome'),
+        supabase.from('produtos').select('id, nome, preco_venda, estoque_atual').eq('ativo', true).order('nome'),
+        supabase.from('servicos').select('id, nome, preco_sugerido').eq('ativo', true).order('nome'),
+      ])
+      if (clientesRes.data) setClientes(clientesRes.data)
+      if (veiculosRes.data) setVeiculos(veiculosRes.data)
+      if (mecanicosRes.data) setMecanicos(mecanicosRes.data)
+      if (produtosRes.data) setProdutos(produtosRes.data)
+      if (servicosRes.data) setServicos(servicosRes.data)
+    } catch {
+      // silently ignore
+    }
   }
 
-  useEffect(() => { fetchOrdens() }, [search, statusFilter])
-  useEffect(() => { if (showModal) fetchFormData() }, [showModal])
+  useEffect(() => {
+    let mounted = true
+    fetchOrdens()
+    return () => {
+      mounted = false
+    }
+  }, [search, statusFilter])
+  useEffect(() => {
+    if (!showModal) return
+    let mounted = true
+    fetchFormData()
+    return () => {
+      mounted = false
+    }
+  }, [showModal])
 
   const handleOpenNew = () => {
     setEditingOS(null)
@@ -164,7 +198,7 @@ export default function OrdensServicoPage() {
     const valorTotal = itens.reduce((acc, item) => acc + (item.valor_total || 0), 0)
     const desconto = parseFloat(formData.get('desconto') as string) || 0
 
-    const osData: any = {
+    const osData: Record<string, unknown> = {
       cliente_id: selectedCliente,
       veiculo_id: selectedVeiculo,
       mecanico_id: formData.get('mecanico_id') || null,
@@ -202,7 +236,7 @@ export default function OrdensServicoPage() {
   }
 
   const handleStatusChange = async (osId: string, newStatus: string) => {
-    const updateData: any = { status: newStatus }
+    const updateData: Record<string, unknown> = { status: newStatus }
     if (newStatus === 'concluida') {
       updateData.data_conclusao = new Date().toISOString()
     }
@@ -217,9 +251,9 @@ export default function OrdensServicoPage() {
     }
   }
 
-  const addItem = (tipo: 'produto' | 'servico', item: any) => {
-    const valorUnitario = tipo === 'produto' ? item.preco_venda : item.preco_sugerido
-    const newItem = {
+  const addItem = (tipo: 'produto' | 'servico', item: { id: string; nome: string; preco_venda?: number; preco_sugerido?: number | null }) => {
+    const valorUnitario = (tipo === 'produto' ? item.preco_venda : item.preco_sugerido) || 0
+    const newItem: OSItem = {
       tipo_item: tipo,
       item_id: item.id,
       descricao: item.nome,
@@ -231,8 +265,8 @@ export default function OrdensServicoPage() {
     setItens([...itens, newItem])
   }
 
-  const updateItem = (index: number, field: string, value: any) => {
-    const updatedItens = [...itens]
+  const updateItem = (index: number, field: 'quantidade' | 'valor_unitario' | 'desconto', value: number) => {
+    const updatedItens: OSItem[] = [...itens]
     updatedItens[index][field] = value
     if (field === 'quantidade' || field === 'valor_unitario' || field === 'desconto') {
       const qtd = field === 'quantidade' ? value : updatedItens[index].quantidade
@@ -305,31 +339,35 @@ export default function OrdensServicoPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ordens.map((os) => (
-                    <tr key={os.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-gray-900">#{os.numero_os}</td>
-                      <td className="py-3 px-4 text-gray-900">{new Date(os.data_abertura).toLocaleDateString('pt-BR')}</td>
-                      <td className="py-3 px-4 text-gray-900">{(os as any).clientes?.nome || '-'}</td>
-                      <td className="py-3 px-4 text-gray-900">{(os as any).veiculos?.placa} - {(os as any).veiculos?.modelo}</td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={os.status}
-                          onChange={(e) => handleStatusChange(os.id, e.target.value)}
-                          className={`px-2 py-1 rounded text-xs ${statusColors[os.status]}`}
-                        >
-                          {Object.entries(statusLabels).map(([key, label]) => (
-                            <option key={key} value={key}>{label}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(os.valor_final)}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => handleViewOS(os)} className="text-gray-800 mr-2"><Eye size={18} /></button>
-                        <button onClick={() => handleEditOS(os)} className="text-blue-600 mr-2"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(os.id)} className="text-red-600"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {ordens.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    ordens.map((os) => (
+                      <tr key={os.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-mono text-gray-900">#{os.numero_os}</td>
+                        <td className="py-3 px-4 text-gray-900">{new Date(os.data_abertura).toLocaleDateString('pt-BR')}</td>
+                        <td className="py-3 px-4 text-gray-900">{os.clientes?.nome || '-'}</td>
+                        <td className="py-3 px-4 text-gray-900">{os.veiculos?.placa} - {os.veiculos?.modelo}</td>
+                        <td className="py-3 px-4">
+                          <select
+                            value={os.status}
+                            onChange={(e) => handleStatusChange(os.id, e.target.value)}
+                            className={`px-2 py-1 rounded text-xs ${statusColors[os.status]}`}
+                          >
+                            {Object.entries(statusLabels).map(([key, label]) => (
+                              <option key={key} value={key}>{label}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(os.valor_final)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button onClick={() => handleViewOS(os)} className="text-gray-800 mr-2"><Eye size={18} /></button>
+                          <button onClick={() => handleEditOS(os)} className="text-blue-600 mr-2"><Edit2 size={18} /></button>
+                          <button onClick={() => handleDelete(os.id)} className="text-red-600"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -424,7 +462,7 @@ export default function OrdensServicoPage() {
                         {produtos.map(p => <option key={p.id} value={p.id}>{p.nome} - {formatCurrency(p.preco_venda)}</option>)}
                       </optgroup>
                       <optgroup label="Serviços">
-                        {servicos.map(s => <option key={s.id} value={s.id}>{s.nome} - {formatCurrency(s.preco_sugerido || 0)}</option>)}
+                        {servicos.map(s => <option key={s.id} value={s.id}>{s.nome} - {formatCurrency(s.preco_sugerido ?? 0)}</option>)}
                       </optgroup>
                     </select>
                   </div>
@@ -444,7 +482,7 @@ export default function OrdensServicoPage() {
                     </thead>
                     <tbody>
                       {itens.map((item, idx) => (
-                        <tr key={idx} className="border-b">
+                        <tr key={item.id || item.descricao + item.valor_unitario} className="border-b">
                           <td className="py-2 text-gray-900">{item.descricao}</td>
                           <td className="py-2">
                             <input 
@@ -473,7 +511,7 @@ export default function OrdensServicoPage() {
                               className="w-full px-2 py-1 border rounded text-right text-gray-900"
                             />
                           </td>
-                          <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_total)}</td>
+                          <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_total ?? 0)}</td>
                           <td className="py-2">
                             <button type="button" onClick={() => removeItem(idx)} className="text-red-600"><X size={16} /></button>
                           </td>
@@ -528,15 +566,15 @@ export default function OrdensServicoPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-800">Cliente</p>
-                  <p className="font-medium text-gray-900">{(viewOS as any).clientes?.nome}</p>
+                  <p className="font-medium text-gray-900">{viewOS.clientes?.nome}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-800">Veículo</p>
-                  <p className="font-medium text-gray-900">{(viewOS as any).veiculos?.placa} - {(viewOS as any).veiculos?.modelo}</p>
+                  <p className="font-medium text-gray-900">{viewOS.veiculos?.placa} - {viewOS.veiculos?.modelo}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-800">Mecânico</p>
-                  <p className="font-medium text-gray-900">{(viewOS as any).mecanicos?.nome || '-'}</p>
+                  <p className="font-medium text-gray-900">{viewOS.mecanicos?.nome || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-800">Status</p>
@@ -573,8 +611,8 @@ export default function OrdensServicoPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(viewOS as any).os_itens?.map((item: any, idx: number) => (
-                      <tr key={idx} className="border-b">
+                    {viewOS.os_itens?.map((item) => (
+                      <tr key={item.id} className="border-b">
                         <td className="py-2 text-gray-900">{item.descricao}</td>
                         <td className="py-2 text-right text-gray-900">{item.quantidade}</td>
                         <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_unitario)}</td>

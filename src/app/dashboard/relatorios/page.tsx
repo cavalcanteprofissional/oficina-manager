@@ -5,9 +5,30 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Loader2, Users, Wrench, ShoppingCart, TrendingUp, Calendar, Car } from 'lucide-react'
 
+interface Aniversariante {
+  nome: string
+  data_nascimento: string
+  telefone1: string
+}
+
+interface RelatorioData {
+  clientes: number
+  veiculos: number
+  mecanicos: number
+  produtos: number
+  osAbertas: number
+  osConcluidas: number
+  vendasMes: number
+  receitaMes: number
+  topProdutos: { nome: string; qtd: number }[]
+  topServicos: { nome: string; qtd: number }[]
+  aniversariantes: Aniversariante[]
+}
+
 export default function RelatoriosPage() {
   const [loading, setLoading] = useState(true)
-  const [relatorio, setRelatorio] = useState<any>({
+  const [error, setError] = useState<string | null>(null)
+  const [relatorio, setRelatorio] = useState<RelatorioData>({
     clientes: 0,
     veiculos: 0,
     mecanicos: 0,
@@ -23,44 +44,54 @@ export default function RelatoriosPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    let mounted = true
     fetchRelatorios()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const fetchRelatorios = async () => {
     setLoading(true)
-    const hoje = new Date()
-    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
-    const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+    setError(null)
+    try {
+      const hoje = new Date()
+      const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+      const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
 
-    const [
-      { count: clientes },
-      { count: veiculos },
-      { count: mecanicos },
-      { count: produtos },
-      { count: osAbertas },
-      { count: osConcluidas },
-      { data: vendas },
-      { data: aniversariantes },
-      { data: osItens },
-      { data: vendaItens },
-    ] = await Promise.all([
-      supabase.from('clientes').select('*', { count: 'exact', head: true }),
-      supabase.from('veiculos').select('*', { count: 'exact', head: true }),
-      supabase.from('mecanicos').select('*', { count: 'exact', head: true }).eq('ativo', true),
-      supabase.from('produtos').select('*', { count: 'exact', head: true }).eq('ativo', true),
-      supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).eq('status', 'aberta'),
-      supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).eq('status', 'concluida'),
-      supabase.from('vendas').select('*').gte('data_venda', primeiroDia).lte('data_venda', ultimoDia),
-      supabase.from('clientes').select('nome, data_nascimento, telefone1').not('data_nascimento', 'is', null),
-      supabase.from('os_itens').select('*'),
-      supabase.from('venda_itens').select('*, produtos(nome)'),
-    ])
+      const results = await Promise.all([
+        supabase.from('clientes').select('*', { count: 'exact', head: true }),
+        supabase.from('veiculos').select('*', { count: 'exact', head: true }),
+        supabase.from('mecanicos').select('*', { count: 'exact', head: true }).eq('ativo', true),
+        supabase.from('produtos').select('*', { count: 'exact', head: true }).eq('ativo', true),
+        supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).eq('status', 'aberta'),
+        supabase.from('ordens_servico').select('*', { count: 'exact', head: true }).eq('status', 'concluida'),
+        supabase.from('vendas').select('*').gte('data_venda', primeiroDia).lte('data_venda', ultimoDia),
+        supabase.from('clientes').select('nome, data_nascimento, telefone1').not('data_nascimento', 'is', null),
+        supabase.from('os_itens').select('*'),
+        supabase.from('venda_itens').select('*, produtos(nome)'),
+      ])
 
-    const receitaMes = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0
+      for (const result of results) {
+        if (result.error) { setError(result.error.message); setLoading(false); return }
+      }
+
+      const clientes = results[0].count
+      const veiculos = results[1].count
+      const mecanicos = results[2].count
+      const produtos = results[3].count
+      const osAbertas = results[4].count
+      const osConcluidas = results[5].count
+      const vendas = results[6].data
+      const aniversariantes = results[7].data
+      const osItens = results[8].data
+      const vendaItens = results[9].data
+
+      const receitaMes = vendas?.reduce((acc: number, v: { total: number }) => acc + (v.total || 0), 0) || 0
 
     // Aniversariantes do mês
     const mesAtual = hoje.getMonth() + 1
-    const aniversariantesMes = aniversariantes?.filter((c: any) => {
+    const aniversariantesMes = aniversariantes?.filter((c: Aniversariante) => {
       if (!c.data_nascimento) return false
       const mes = new Date(c.data_nascimento).getMonth() + 1
       return mes === mesAtual
@@ -68,14 +99,14 @@ export default function RelatoriosPage() {
 
     // Top produtos vendidos (OS + Vendas)
     const produtosCount: Record<string, { nome: string; qtd: number }> = {}
-    osItens?.filter((i: any) => i.tipo_item === 'produto').forEach((item: any) => {
+    osItens?.filter((i: { tipo_item: string; item_id: string; descricao: string; quantidade: number; valor_unitario: number }) => i.tipo_item === 'produto').forEach((item: { quantidade: number; valor_unitario: number; descricao: string }) => {
       if (produtosCount[item.descricao]) {
         produtosCount[item.descricao].qtd += item.quantidade
       } else {
         produtosCount[item.descricao] = { nome: item.descricao, qtd: item.quantidade }
       }
     })
-    vendaItens?.forEach((item: any) => {
+    vendaItens?.forEach((item: { quantidade: number; valor_unitario: number; produtos?: { nome: string } }) => {
       const nome = item.produtos?.nome || 'Produto'
       if (produtosCount[nome]) {
         produtosCount[nome].qtd += item.quantidade
@@ -83,18 +114,18 @@ export default function RelatoriosPage() {
         produtosCount[nome] = { nome, qtd: item.quantidade }
       }
     })
-    const topProdutos = Object.values(produtosCount).sort((a: any, b: any) => b.qtd - a.qtd).slice(0, 5)
+    const topProdutos = Object.values(produtosCount).sort((a: { nome: string; qtd: number }, b: { nome: string; qtd: number }) => b.qtd - a.qtd).slice(0, 5)
 
     // Top serviços
     const servicosCount: Record<string, { nome: string; qtd: number }> = {}
-    osItens?.filter((i: any) => i.tipo_item === 'servico').forEach((item: any) => {
+    osItens?.filter((i: { tipo_item: string; item_id: string; descricao: string; quantidade: number; valor_unitario: number }) => i.tipo_item === 'servico').forEach((item: { quantidade: number; descricao: string }) => {
       if (servicosCount[item.descricao]) {
         servicosCount[item.descricao].qtd += item.quantidade
       } else {
         servicosCount[item.descricao] = { nome: item.descricao, qtd: item.quantidade }
       }
     })
-    const topServicos = Object.values(servicosCount).sort((a: any, b: any) => b.qtd - a.qtd).slice(0, 5)
+    const topServicos = Object.values(servicosCount).sort((a: { nome: string; qtd: number }, b: { nome: string; qtd: number }) => b.qtd - a.qtd).slice(0, 5)
 
     setRelatorio({
       clientes: clientes || 0,
@@ -109,6 +140,9 @@ export default function RelatoriosPage() {
       topServicos,
       aniversariantes: aniversariantesMes,
     })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar relatórios')
+    }
     setLoading(false)
   }
 
@@ -125,6 +159,12 @@ export default function RelatoriosPage() {
 
   return (
     <div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Relatórios</h1>
 
       {/* Resumo Geral */}
@@ -199,7 +239,7 @@ export default function RelatoriosPage() {
               <p className="text-gray-700 text-center py-4">Nenhum aniversariante este mês</p>
             ) : (
               <div className="space-y-3">
-                {relatorio.aniversariantes.map((c: any, idx: number) => (
+                {relatorio.aniversariantes.map((c, idx) => (
                   <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <div>
                       <p className="font-medium">{c.nome}</p>
@@ -228,8 +268,8 @@ export default function RelatoriosPage() {
               <p className="text-gray-700 text-center py-4">Nenhuma venda registrada</p>
             ) : (
               <div className="space-y-3">
-                {relatorio.topProdutos.map((p: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center">
+                {relatorio.topProdutos.map((p: { nome: string; qtd: number }, idx: number) => (
+                  <div key={p.nome} className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs">
                         {idx + 1}
@@ -254,8 +294,8 @@ export default function RelatoriosPage() {
               <p className="text-gray-700 text-center py-4">Nenhum serviço registrado</p>
             ) : (
               <div className="space-y-3">
-                {relatorio.topServicos.map((s: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center">
+                {relatorio.topServicos.map((s: { nome: string; qtd: number }, idx: number) => (
+                  <div key={s.nome} className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs">
                         {idx + 1}

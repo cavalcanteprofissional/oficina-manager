@@ -48,43 +48,73 @@ export default function VendasPage() {
   const [formaPagamento, setFormaPagamento] = useState('')
   const [saving, setSaving] = useState(false)
   const [showVendas, setShowVendas] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const fetchProdutos = async () => {
-    const { data } = await supabase
-      .from('produtos')
-      .select('*')
-      .eq('ativo', true)
-      .gt('estoque_atual', 0)
-      .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
-      .order('nome')
-    if (data) setProdutos(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('ativo', true)
+        .gt('estoque_atual', 0)
+        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setProdutos(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar produtos')
+    }
   }
 
   const fetchClientes = async () => {
-    const { data } = await supabase.from('clientes').select('id, nome').order('nome')
-    if (data) setClientes(data)
+    try {
+      const { data, error: supabaseError } = await supabase.from('clientes').select('id, nome').order('nome')
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setClientes(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar clientes')
+    }
   }
 
   const fetchVendas = async () => {
-    const { data } = await supabase
-      .from('vendas')
-      .select('*, clientes(nome)')
-      .order('data_venda', { ascending: false })
-      .limit(20)
-    if (data) setVendas(data)
+    setError(null)
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('vendas')
+        .select('*, clientes(nome)')
+        .order('data_venda', { ascending: false })
+        .limit(20)
+      if (supabaseError) { setError(supabaseError.message); return }
+      if (data) setVendas(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar vendas')
+    }
   }
 
   useEffect(() => {
+    let mounted = true
     const load = async () => {
-      await Promise.all([fetchProdutos(), fetchClientes(), fetchVendas()])
-      setLoading(false)
+      await Promise.all([
+        fetchProdutos(),
+        fetchClientes(),
+        fetchVendas(),
+      ])
+      if (mounted) setLoading(false)
     }
     load()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   useEffect(() => {
+    let mounted = true
     fetchProdutos()
+    return () => {
+      mounted = false
+    }
   }, [search])
 
   const adicionarAoCarrinho = (produto: Produto) => {
@@ -183,6 +213,12 @@ export default function VendasPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+
       {showVendas ? (
         <Card>
           <CardHeader>
@@ -201,15 +237,19 @@ export default function VendasPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {vendas.map((v) => (
-                    <tr key={v.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-gray-900">#{v.numero_venda}</td>
-                      <td className="py-3 px-4 text-gray-900">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
-                      <td className="py-3 px-4 text-gray-900">{(v as any).clientes?.nome || '-'}</td>
-                      <td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(v.total)}</td>
-                      <td className="py-3 px-4 text-gray-900">{v.forma_pagamento || '-'}</td>
-                    </tr>
-                  ))}
+                  {vendas.length === 0 ? (
+                    <tr><td colSpan={5} className="text-center py-12 text-gray-500">Nenhum registro encontrado</td></tr>
+                  ) : (
+                    vendas.map((v) => (
+                      <tr key={v.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-mono text-gray-900">#{v.numero_venda}</td>
+                        <td className="py-3 px-4 text-gray-900">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
+                        <td className="py-3 px-4 text-gray-900">{v.clientes?.nome || '-'}</td>
+                        <td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(v.total)}</td>
+                        <td className="py-3 px-4 text-gray-900">{v.forma_pagamento || '-'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
