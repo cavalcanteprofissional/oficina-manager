@@ -284,22 +284,22 @@ export default function OrdensServicoPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Nº OS</th>
-                    <th className="text-left py-3 px-4">Data</th>
-                    <th className="text-left py-3 px-4">Cliente</th>
-                    <th className="text-left py-3 px-4">Veículo</th>
-                    <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-right py-3 px-4">Valor</th>
-                    <th className="text-right py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Nº OS</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Data</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Cliente</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Veículo</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Valor</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ordens.map((os) => (
                     <tr key={os.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono">#{os.numero_os}</td>
-                      <td className="py-3 px-4">{new Date(os.data_abertura).toLocaleDateString('pt-BR')}</td>
-                      <td className="py-3 px-4">{(os as any).clientes?.nome || '-'}</td>
-                      <td className="py-3 px-4">{(os as any).veiculos?.placa} - {(os as any).veiculos?.modelo}</td>
+                      <td className="py-3 px-4 font-mono text-gray-900">#{os.numero_os}</td>
+                      <td className="py-3 px-4 text-gray-900">{new Date(os.data_abertura).toLocaleDateString('pt-BR')}</td>
+                      <td className="py-3 px-4 text-gray-900">{(os as any).clientes?.nome || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{(os as any).veiculos?.placa} - {(os as any).veiculos?.modelo}</td>
                       <td className="py-3 px-4">
                         <select
                           value={os.status}
@@ -311,9 +311,9 @@ export default function OrdensServicoPage() {
                           ))}
                         </select>
                       </td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(os.valor_final)}</td>
+                      <td className="py-3 px-4 text-right text-gray-900">{formatCurrency(os.valor_final)}</td>
                       <td className="py-3 px-4 text-right">
-                        <button onClick={() => handleViewOS(os)} className="text-gray-600 mr-2"><Eye size={18} /></button>
+                        <button onClick={() => handleViewOS(os)} className="text-gray-800 mr-2"><Eye size={18} /></button>
                         <button onClick={() => handleEditOS(os)} className="text-blue-600 mr-2"><Edit2 size={18} /></button>
                         <button onClick={() => handleDelete(os.id)} className="text-red-600"><Trash2 size={18} /></button>
                       </td>
@@ -337,7 +337,7 @@ export default function OrdensServicoPage() {
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Cliente *</label>
                   <select 
                     value={selectedCliente} 
                     onChange={(e) => { setSelectedCliente(e.target.value); setSelectedVeiculo('') }}
@@ -349,7 +349,7 @@ export default function OrdensServicoPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Veículo *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Veículo *</label>
                   <select 
                     value={selectedVeiculo} 
                     onChange={(e) => setSelectedVeiculo(e.target.value)}
@@ -362,22 +362,22 @@ export default function OrdensServicoPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mecânico</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Mecânico</label>
                   <select name="mecanico_id" defaultValue={editingOS?.mecanico_id || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="">Selecione</option>
                     {mecanicos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Previsão</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Previsão</label>
                   <Input type="date" name="data_previsao" defaultValue={editingOS?.data_previsao || ''} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">KM</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">KM</label>
                   <Input type="number" name="km_veiculo" defaultValue={editingOS?.km_veiculo || ''} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Combustível</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Combustível</label>
                   <select name="nivel_combustivel" defaultValue={editingOS?.nivel_combustivel || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="">Selecione</option>
                     <option value="1/4">1/4</option>
@@ -389,14 +389,14 @@ export default function OrdensServicoPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Problemas Relatados</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Problemas Relatados</label>
                 <textarea name="problemas_relatados" rows={2} defaultValue={editingOS?.problemas_relatados || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
               </div>
 
               {/* Itens da OS */}
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold">Itens da OS</h3>
+                  <h3 className="font-semibold text-gray-900">Itens da OS</h3>
                   <div className="flex gap-2">
                     <select 
                       onChange={(e) => {
@@ -423,25 +423,25 @@ export default function OrdensServicoPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2">Descrição</th>
-                        <th className="text-right py-2 w-20">Qtd</th>
-                        <th className="text-right py-2 w-24">Valor Unit.</th>
-                        <th className="text-right py-2 w-24">Desconto</th>
-                        <th className="text-right py-2 w-28">Total</th>
+                        <th className="text-left py-2 font-semibold text-gray-900">Descrição</th>
+                        <th className="text-right py-2 w-20 font-semibold text-gray-900">Qtd</th>
+                        <th className="text-right py-2 w-24 font-semibold text-gray-900">Valor Unit.</th>
+                        <th className="text-right py-2 w-24 font-semibold text-gray-900">Desconto</th>
+                        <th className="text-right py-2 w-28 font-semibold text-gray-900">Total</th>
                         <th className="w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {itens.map((item, idx) => (
                         <tr key={idx} className="border-b">
-                          <td className="py-2">{item.descricao}</td>
+                          <td className="py-2 text-gray-900">{item.descricao}</td>
                           <td className="py-2">
                             <input 
                               type="number" 
                               min="1" 
                               value={item.quantidade}
                               onChange={(e) => updateItem(idx, 'quantidade', parseInt(e.target.value) || 1)}
-                              className="w-full px-2 py-1 border rounded text-right"
+                              className="w-full px-2 py-1 border rounded text-right text-gray-900"
                             />
                           </td>
                           <td className="py-2">
@@ -450,7 +450,7 @@ export default function OrdensServicoPage() {
                               step="0.01"
                               value={item.valor_unitario}
                               onChange={(e) => updateItem(idx, 'valor_unitario', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 border rounded text-right"
+                              className="w-full px-2 py-1 border rounded text-right text-gray-900"
                             />
                           </td>
                           <td className="py-2">
@@ -459,10 +459,10 @@ export default function OrdensServicoPage() {
                               step="0.01"
                               value={item.desconto}
                               onChange={(e) => updateItem(idx, 'desconto', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 border rounded text-right"
+                              className="w-full px-2 py-1 border rounded text-right text-gray-900"
                             />
                           </td>
-                          <td className="py-2 text-right">{formatCurrency(item.valor_total)}</td>
+                          <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_total)}</td>
                           <td className="py-2">
                             <button type="button" onClick={() => removeItem(idx)} className="text-red-600"><X size={16} /></button>
                           </td>
@@ -471,20 +471,20 @@ export default function OrdensServicoPage() {
                     </tbody>
                     <tfoot>
                       <tr>
-                        <td colSpan={4} className="text-right py-2 font-semibold">Total:</td>
-                        <td className="text-right py-2 font-bold">{formatCurrency(totalItens)}</td>
+                        <td colSpan={4} className="text-right py-2 font-semibold text-gray-900">Total:</td>
+                        <td className="text-right py-2 font-bold text-gray-900">{formatCurrency(totalItens)}</td>
                       </tr>
                     </tfoot>
                   </table>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Nenhum item adicionado</p>
+                  <p className="text-gray-800 text-center py-4">Nenhum item adicionado</p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Desconto" name="desconto" type="number" step="0.01" defaultValue={editingOS?.desconto || '0'} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Forma de Pagamento</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Forma de Pagamento</label>
                   <select name="forma_pagamento" defaultValue={editingOS?.forma_pagamento || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="">Selecione</option>
                     <option value="Dinheiro">Dinheiro</option>
@@ -516,58 +516,58 @@ export default function OrdensServicoPage() {
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Cliente</p>
-                  <p className="font-medium">{(viewOS as any).clientes?.nome}</p>
+                  <p className="text-sm text-gray-800">Cliente</p>
+                  <p className="font-medium text-gray-900">{(viewOS as any).clientes?.nome}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Veículo</p>
-                  <p className="font-medium">{(viewOS as any).veiculos?.placa} - {(viewOS as any).veiculos?.modelo}</p>
+                  <p className="text-sm text-gray-800">Veículo</p>
+                  <p className="font-medium text-gray-900">{(viewOS as any).veiculos?.placa} - {(viewOS as any).veiculos?.modelo}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Mecânico</p>
-                  <p className="font-medium">{(viewOS as any).mecanicos?.nome || '-'}</p>
+                  <p className="text-sm text-gray-800">Mecânico</p>
+                  <p className="font-medium text-gray-900">{(viewOS as any).mecanicos?.nome || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="text-sm text-gray-800">Status</p>
                   <span className={`px-2 py-1 rounded text-xs ${statusColors[viewOS.status]}`}>
                     {statusLabels[viewOS.status]}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Abertura</p>
-                  <p className="font-medium">{new Date(viewOS.data_abertura).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-sm text-gray-800">Abertura</p>
+                  <p className="font-medium text-gray-900">{new Date(viewOS.data_abertura).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Previsão</p>
-                  <p className="font-medium">{viewOS.data_previsao ? new Date(viewOS.data_previsao).toLocaleDateString('pt-BR') : '-'}</p>
+                  <p className="text-sm text-gray-800">Previsão</p>
+                  <p className="font-medium text-gray-900">{viewOS.data_previsao ? new Date(viewOS.data_previsao).toLocaleDateString('pt-BR') : '-'}</p>
                 </div>
               </div>
               
               {viewOS.problemas_relatados && (
                 <div>
-                  <p className="text-sm text-gray-500">Problemas Relatados</p>
-                  <p>{viewOS.problemas_relatados}</p>
+                  <p className="text-sm text-gray-800">Problemas Relatados</p>
+                  <p className="text-gray-900">{viewOS.problemas_relatados}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-sm text-gray-500 mb-2">Itens</p>
+                <p className="text-sm text-gray-800 mb-2">Itens</p>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2">Descrição</th>
-                      <th className="text-right py-2">Qtd</th>
-                      <th className="text-right py-2">Valor</th>
-                      <th className="text-right py-2">Total</th>
+                      <th className="text-left py-2 font-semibold text-gray-900">Descrição</th>
+                      <th className="text-right py-2 font-semibold text-gray-900">Qtd</th>
+                      <th className="text-right py-2 font-semibold text-gray-900">Valor</th>
+                      <th className="text-right py-2 font-semibold text-gray-900">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(viewOS as any).os_itens?.map((item: any, idx: number) => (
                       <tr key={idx} className="border-b">
-                        <td className="py-2">{item.descricao}</td>
-                        <td className="py-2 text-right">{item.quantidade}</td>
-                        <td className="py-2 text-right">{formatCurrency(item.valor_unitario)}</td>
-                        <td className="py-2 text-right">{formatCurrency(item.valor_total)}</td>
+                        <td className="py-2 text-gray-900">{item.descricao}</td>
+                        <td className="py-2 text-right text-gray-900">{item.quantidade}</td>
+                        <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_unitario)}</td>
+                        <td className="py-2 text-right text-gray-900">{formatCurrency(item.valor_total)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -575,15 +575,15 @@ export default function OrdensServicoPage() {
               </div>
 
               <div className="border-t pt-4">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-gray-900">
                   <span>Subtotal:</span>
                   <span>{formatCurrency(viewOS.valor_total)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-gray-900">
                   <span>Desconto:</span>
                   <span>- {formatCurrency(viewOS.desconto)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg">
+                <div className="flex justify-between font-bold text-lg text-gray-900">
                   <span>Total:</span>
                   <span>{formatCurrency(viewOS.valor_final)}</span>
                 </div>

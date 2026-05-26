@@ -154,11 +154,11 @@ export default function UsuariosPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Role</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Criado em</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Role</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Criado em</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,7 +205,7 @@ export default function UsuariosPage() {
                 </table>
               </div>
               {usuarios.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-700">
                   Nenhum usuário encontrado
                 </div>
               )}
@@ -221,7 +221,7 @@ export default function UsuariosPage() {
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingUsuario ? 'Editar Usuário' : 'Novo Usuário'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowModal(false)} className="text-gray-700 hover:text-gray-900">
                 <X size={24} />
               </button>
             </div>
@@ -243,7 +243,7 @@ export default function UsuariosPage() {
                 defaultValue={editingUsuario?.telefone || ''}
               />
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-900 mb-1">
                   Role *
                 </label>
                 <select
@@ -268,7 +268,7 @@ export default function UsuariosPage() {
                   defaultChecked={editingUsuario?.ativo ?? true}
                   className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
-                <label htmlFor="ativo" className="text-sm text-gray-700">
+                <label htmlFor="ativo" className="text-sm text-gray-900">
                   Usuário ativo
                 </label>
               </div>

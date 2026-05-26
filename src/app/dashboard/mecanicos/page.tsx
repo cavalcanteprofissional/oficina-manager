@@ -112,12 +112,12 @@ export default function MecanicosPage() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Nome</th>
                     <th className="text-left py-3 px-4">CPF</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">CPF</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefone</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Comissão %</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">CPF</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Telefone</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Comissão %</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                   </tr>
                 </thead>
                 <tbody>

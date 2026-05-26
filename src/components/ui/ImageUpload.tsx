@@ -84,7 +84,7 @@ export default function ImageUpload({
           ) : (
             <>
               <Upload size={20} className="text-gray-400 mb-1" />
-              <span className="text-xs text-gray-500">Upload</span>
+              <span className="text-xs text-gray-700">Upload</span>
             </>
           )}
           <input

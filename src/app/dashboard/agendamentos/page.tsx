@@ -151,7 +151,7 @@ export default function AgendamentosPage() {
         <div className="flex justify-center py-8"><Loader2 className="animate-spin" size={32} /></div>
       ) : Object.keys(agendamentosPorData).length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-gray-500">
+          <CardContent className="py-12 text-center text-gray-700">
             <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
             <p>Nenhum agendamento para hoje</p>
           </CardContent>
@@ -159,7 +159,7 @@ export default function AgendamentosPage() {
       ) : (
         Object.entries(agendamentosPorData).map(([data, ags]) => (
           <div key={data} className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">
               {new Date(data).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </h2>
             <div className="space-y-3">
@@ -169,21 +169,21 @@ export default function AgendamentosPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <Clock size={16} className="text-gray-500" />
+                          <Clock size={16} className="text-gray-700" />
                           <span className="font-medium">{ag.hora_agendamento}</span>
                           <span className={`px-2 py-0.5 rounded text-xs ${statusColors[ag.status]}`}>
                             {ag.status}
                           </span>
                         </div>
                         <p className="font-medium">{(ag as any).clientes?.nome}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-800">
                           {(ag as any).veiculos?.placa} - {(ag as any).veiculos?.modelo}
                         </p>
                         {(ag as any).servicos?.nome && (
-                          <p className="text-sm text-gray-500">{(ag as any).servicos?.nome}</p>
+                          <p className="text-sm text-gray-700">{(ag as any).servicos?.nome}</p>
                         )}
                         {(ag as any).mecanicos?.nome && (
-                          <p className="text-sm text-gray-500">Mecânico: {(ag as any).mecanicos?.nome}</p>
+                          <p className="text-sm text-gray-700">Mecânico: {(ag as any).mecanicos?.nome}</p>
                         )}
                       </div>
                       <div className="flex gap-2">
@@ -207,7 +207,7 @@ export default function AgendamentosPage() {
                             <XCircle size={20} />
                           </button>
                         )}
-                        <button onClick={() => deleteAgendamento(ag.id)} className="text-gray-400 hover:text-red-600">
+                        <button onClick={() => deleteAgendamento(ag.id)} className="text-gray-500 hover:text-red-600">
                           <X size={20} />
                         </button>
                       </div>
@@ -230,7 +230,7 @@ export default function AgendamentosPage() {
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Cliente *</label>
                 <select 
                   value={selectedCliente}
                   onChange={(e) => { setSelectedCliente(e.target.value); setSelectedVeiculo('') }}
@@ -242,7 +242,7 @@ export default function AgendamentosPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Veículo *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Veículo *</label>
                 <select 
                   value={selectedVeiculo}
                   onChange={(e) => setSelectedVeiculo(e.target.value)}
@@ -255,7 +255,7 @@ export default function AgendamentosPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Serviço</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Serviço</label>
                 <select name="servico_id" className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
@@ -264,19 +264,19 @@ export default function AgendamentosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Data *" name="data_agendamento" type="date" required />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hora *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Hora *</label>
                   <Input type="time" name="hora_agendamento" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mecânico</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Mecânico</label>
                 <select name="mecanico_id" className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   {mecanicos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Observação</label>
                 <textarea name="observacoes" rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
               </div>
               <div className="flex justify-end gap-3 pt-4">

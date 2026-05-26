@@ -107,7 +107,7 @@ export default function ContasReceberPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Contas a Receber</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-900">
             Pendente: <span className="font-bold text-yellow-600">{formatCurrency(totalPendente)}</span>
             <span className="ml-4">Recebido: <span className="font-bold text-green-600">{formatCurrency(totalRecebido)}</span></span>
           </p>
@@ -123,7 +123,7 @@ export default function ContasReceberPage() {
             key={status}
             onClick={() => setStatusFilter(status)}
             className={`px-4 py-2 rounded-md text-sm ${
-              statusFilter === status ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              statusFilter === status ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
             {status === '' ? 'Todos' : status.charAt(0).toUpperCase() + status.slice(1)}
@@ -155,7 +155,7 @@ export default function ContasReceberPage() {
                       <tr key={conta.id} className={`border-b hover:bg-gray-50 ${isAtrasado ? 'bg-red-50' : ''}`}>
                         <td className="py-3 px-4">
                           <div>{conta.descricao}</div>
-                          {conta.documento && <div className="text-xs text-gray-500">Doc: {conta.documento}</div>}
+                          {conta.documento && <div className="text-xs text-gray-800">Doc: {conta.documento}</div>}
                         </td>
                         <td className="py-3 px-4">{(conta as any).clientes?.nome || '-'}</td>
                         <td className="py-3 px-4">
@@ -197,7 +197,7 @@ export default function ContasReceberPage() {
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Cliente</label>
                 <select name="cliente_id" className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -216,7 +216,7 @@ export default function ContasReceberPage() {
                 <Input label="Desconto" name="desconto" type="number" step="0.01" defaultValue="0" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Forma Recebimento</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Forma Recebimento</label>
                 <select name="forma_recebimento" className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   <option value="Dinheiro">Dinheiro</option>

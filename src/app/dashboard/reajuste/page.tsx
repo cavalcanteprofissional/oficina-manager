@@ -115,14 +115,14 @@ export default function ReajustePrecosPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Reajuste</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Tipo de Reajuste</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setTipoReajuste('percentual')}
                     className={`flex-1 py-2 px-4 rounded-md text-sm ${
                       tipoReajuste === 'percentual' 
                         ? 'bg-primary text-white' 
-                        : 'bg-gray-100 text-gray-700'
+                        : 'bg-gray-100 text-gray-800'
                     }`}
                   >
                     Por Percentual
@@ -132,7 +132,7 @@ export default function ReajustePrecosPage() {
                     className={`flex-1 py-2 px-4 rounded-md text-sm ${
                       tipoReajuste === 'valor' 
                         ? 'bg-primary text-white' 
-                        : 'bg-gray-100 text-gray-700'
+                        : 'bg-gray-100 text-gray-800'
                     }`}
                   >
                     Por Valor
@@ -141,7 +141,7 @@ export default function ReajustePrecosPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   {tipoReajuste === 'percentual' ? 'Percentual (%)' : 'Valor (R$)'}
                 </label>
                 <input

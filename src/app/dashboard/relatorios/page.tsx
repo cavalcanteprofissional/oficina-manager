@@ -124,7 +124,7 @@ export default function RelatoriosPage() {
             <div className="flex items-center gap-3">
               <div className="p-3 bg-blue-100 rounded-lg"><Users className="text-blue-600" size={20} /></div>
               <div>
-                <p className="text-sm text-gray-600">Clientes</p>
+                <p className="text-sm text-gray-900">Clientes</p>
                 <p className="text-xl font-bold">{relatorio.clientes}</p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function RelatoriosPage() {
             <div className="flex items-center gap-3">
               <div className="p-3 bg-green-100 rounded-lg"><ShoppingCart className="text-green-600" size={20} /></div>
               <div>
-                <p className="text-sm text-gray-600">Produtos</p>
+                <p className="text-sm text-gray-900">Produtos</p>
                 <p className="text-xl font-bold">{relatorio.produtos}</p>
               </div>
             </div>
@@ -146,7 +146,7 @@ export default function RelatoriosPage() {
             <div className="flex items-center gap-3">
               <div className="p-3 bg-purple-100 rounded-lg"><Wrench className="text-purple-600" size={20} /></div>
               <div>
-                <p className="text-sm text-gray-600">Mecânicos</p>
+                <p className="text-sm text-gray-900">Mecânicos</p>
                 <p className="text-xl font-bold">{relatorio.mecanicos}</p>
               </div>
             </div>
@@ -157,7 +157,7 @@ export default function RelatoriosPage() {
             <div className="flex items-center gap-3">
               <div className="p-3 bg-orange-100 rounded-lg"><TrendingUp className="text-orange-600" size={20} /></div>
               <div>
-                <p className="text-sm text-gray-600">Receita Mês</p>
+                <p className="text-sm text-gray-900">Receita Mês</p>
                 <p className="text-xl font-bold text-green-600">{formatCurrency(relatorio.receitaMes)}</p>
               </div>
             </div>
@@ -175,17 +175,17 @@ export default function RelatoriosPage() {
           </CardHeader>
           <CardContent>
             {relatorio.aniversariantes.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nenhum aniversariante este mês</p>
+              <p className="text-gray-700 text-center py-4">Nenhum aniversariante este mês</p>
             ) : (
               <div className="space-y-3">
                 {relatorio.aniversariantes.map((c: any, idx: number) => (
                   <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <div>
                       <p className="font-medium">{c.nome}</p>
-                      <p className="text-sm text-gray-500">{c.telefone1}</p>
+                      <p className="text-sm text-gray-700">{c.telefone1}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-700">
                         {new Date(c.data_nascimento).getDate()}/
                         {new Date(c.data_nascimento).getMonth() + 1}
                       </p>
@@ -204,7 +204,7 @@ export default function RelatoriosPage() {
           </CardHeader>
           <CardContent>
             {relatorio.topProdutos.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nenhuma venda registrada</p>
+              <p className="text-gray-700 text-center py-4">Nenhuma venda registrada</p>
             ) : (
               <div className="space-y-3">
                 {relatorio.topProdutos.map((p: any, idx: number) => (
@@ -230,7 +230,7 @@ export default function RelatoriosPage() {
           </CardHeader>
           <CardContent>
             {relatorio.topServicos.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nenhum serviço registrado</p>
+              <p className="text-gray-700 text-center py-4">Nenhum serviço registrado</p>
             ) : (
               <div className="space-y-3">
                 {relatorio.topServicos.map((s: any, idx: number) => (
@@ -258,16 +258,16 @@ export default function RelatoriosPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">{relatorio.osAbertas}</p>
-                <p className="text-sm text-gray-600">Abertas</p>
+                <p className="text-sm text-gray-900">Abertas</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">{relatorio.osConcluidas}</p>
-                <p className="text-sm text-gray-600">Concluídas</p>
+                <p className="text-sm text-gray-900">Concluídas</p>
               </div>
             </div>
             <div className="mt-4 text-center">
               <p className="text-lg">
-                <span className="text-gray-600">Vendas este mês: </span>
+                <span className="text-gray-900">Vendas este mês: </span>
                 <span className="font-bold">{relatorio.vendasMes}</span>
               </p>
             </div>

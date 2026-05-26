@@ -90,7 +90,7 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal open={open} onClose={onClose} title={title} size="sm">
-      <p className="text-gray-600 mb-6">{message}</p>
+      <p className="text-gray-800 mb-6">{message}</p>
       <div className="flex gap-3 justify-end">
         <Button variant="outline" onClick={onClose} disabled={loading}>
           {cancelText}

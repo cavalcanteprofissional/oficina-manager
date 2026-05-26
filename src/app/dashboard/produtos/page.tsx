@@ -119,13 +119,13 @@ export default function ProdutosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Código</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Custo</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Venda</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Estoque</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Categoria</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Código</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Custo</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Venda</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Estoque</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Categoria</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                   </tr>
                 </thead>
                 <tbody>

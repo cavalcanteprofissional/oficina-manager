@@ -101,7 +101,7 @@ export default function DashboardPage() {
                   <Icon className="text-white" size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">{card.name}</p>
+                  <p className="text-sm text-gray-900">{card.name}</p>
                   <p className="text-xl font-bold text-gray-900">{card.value}</p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
 
       <div className="mt-8 bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Bem-vindo ao Oficina Manager</h2>
-        <p className="text-gray-600">
+        <p className="text-gray-900">
           Sistema de gestão completo para sua oficina mecânica. 
           Utilize o menu lateral para navegar entre os módulos.
         </p>

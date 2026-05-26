@@ -42,7 +42,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Oficina Manager</h1>
-            <p className="text-gray-600 mt-2">Faça login para continuar</p>
+            <p className="text-gray-800 mt-2">Faça login para continuar</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
@@ -53,7 +53,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-1">
                 E-mail
               </label>
               <input
@@ -68,7 +68,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-1">
                 Senha
               </label>
               <input
@@ -93,7 +93,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-800">
               Não tem uma conta?{' '}
               <a href="/register" className="text-primary hover:underline font-medium">
                 Cadastrar

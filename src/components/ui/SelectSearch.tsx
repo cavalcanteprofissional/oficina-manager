@@ -48,7 +48,7 @@ export default function SelectSearch({
 
   return (
     <div ref={ref} className="relative">
-      {label && <label className="block text-sm text-gray-600 mb-1">{label}</label>}
+      {label && <label className="block text-sm text-gray-900 mb-1">{label}</label>}
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -87,7 +87,7 @@ export default function SelectSearch({
                     setSearch('')
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 ${
-                    option.value === value ? 'bg-blue-50 text-primary font-medium' : 'text-gray-700'
+                    option.value === value ? 'bg-blue-50 text-primary font-medium' : 'text-gray-800'
                   }`}
                 >
                   {option.label}

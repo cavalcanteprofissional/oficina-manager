@@ -89,7 +89,7 @@ export default function CaixaPage() {
                 <TrendingUp className="text-green-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Entradas</p>
+                <p className="text-sm text-gray-900">Entradas</p>
                 <p className="text-xl font-bold text-green-600">{formatCurrency(entradas)}</p>
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function CaixaPage() {
                 <TrendingDown className="text-red-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Saídas</p>
+                <p className="text-sm text-gray-900">Saídas</p>
                 <p className="text-xl font-bold text-red-600">{formatCurrency(saidas)}</p>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function CaixaPage() {
                 <Wallet className="text-blue-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Saldo Atual</p>
+                <p className="text-sm text-gray-900">Saldo Atual</p>
                 <p className={`text-xl font-bold ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                   {formatCurrency(saldo)}
                 </p>
@@ -191,7 +191,7 @@ export default function CaixaPage() {
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Tipo *</label>
                 <select name="tipo_movimento" required className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="entrada">Entrada</option>
                   <option value="saida">Saída</option>
@@ -202,7 +202,7 @@ export default function CaixaPage() {
               <Input label="Descrição *" name="descricao" required />
               <Input label="Valor *" name="valor" type="number" step="0.01" required />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Forma de Pagamento</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Forma de Pagamento</label>
                 <select name="forma_pagamento" className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   <option value="Dinheiro">Dinheiro</option>

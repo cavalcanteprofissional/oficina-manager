@@ -121,11 +121,11 @@ export default function VeiculosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Placa</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Marca/Modelo</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Ano</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Cliente</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Placa</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Marca/Modelo</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Ano</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Cliente</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,7 +158,7 @@ export default function VeiculosPage() {
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Cliente *</label>
                   <select name="cliente_id" required defaultValue={editing?.cliente_id} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="">Selecione</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -174,7 +174,7 @@ export default function VeiculosPage() {
                 <Input label="Renavam" name="renavam" defaultValue={''} />
                 <Input label="Km Atual" name="km_atual" type="number" defaultValue={editing?.km_atual || ''} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Combustível</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Combustível</label>
                   <select name="combustivel" defaultValue={editing?.combustivel || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="">Selecione</option>
                     <option value="Gasolina">Gasolina</option>

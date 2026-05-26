@@ -101,7 +101,7 @@ export default function BottomNavigation() {
                 <li key={item.name}>
                   <button
                     onClick={() => setShowMenu(!showMenu)}
-                    className="flex flex-col items-center px-4 py-1 text-gray-600"
+                    className="flex flex-col items-center px-4 py-1 text-gray-900"
                   >
                     <Icon size={24} />
                     <span className="text-xs mt-1">{item.name}</span>
@@ -115,7 +115,7 @@ export default function BottomNavigation() {
                 <Link
                   href={item.href}
                   className={`flex flex-col items-center px-4 py-1 ${
-                    isActive ? 'text-primary' : 'text-gray-600'
+                    isActive ? 'text-primary' : 'text-gray-900'
                   }`}
                 >
                   <Icon size={24} />
@@ -140,7 +140,7 @@ export default function BottomNavigation() {
                     href={item.href}
                     onClick={() => setShowMenu(false)}
                     className={`flex flex-col items-center p-2 rounded ${
-                      isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                      isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-800 hover:bg-gray-100'
                     }`}
                   >
                     <Icon size={24} />

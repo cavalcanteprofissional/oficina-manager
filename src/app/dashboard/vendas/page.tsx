@@ -194,11 +194,11 @@ export default function VendasPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Nº Venda</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nº</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Cliente</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Total</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Forma Pag.</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Nº</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Data</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Cliente</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-900">Total</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Forma Pag.</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -242,7 +242,7 @@ export default function VendasPage() {
                       className="p-4 border rounded-lg hover:border-primary hover:bg-blue-50 transition-colors text-left"
                     >
                       <p className="font-medium text-sm truncate">{p.nome}</p>
-                      <p className="text-xs text-gray-500">{p.estoque_atual} em estoque</p>
+                      <p className="text-xs text-gray-700">{p.estoque_atual} em estoque</p>
                       <p className="text-primary font-bold mt-2">{formatCurrency(p.preco_venda)}</p>
                     </button>
                   ))}
@@ -259,14 +259,14 @@ export default function VendasPage() {
               </CardHeader>
               <CardContent>
                 {carrinho.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">Carrinho vazio</p>
+                  <p className="text-gray-700 text-center py-8">Carrinho vazio</p>
                 ) : (
                   <div className="space-y-4">
                     {carrinho.map((item) => (
                       <div key={item.produto_id} className="flex justify-between items-center border-b pb-2">
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.produto?.nome}</p>
-                          <p className="text-xs text-gray-500">{formatCurrency(item.valor_unitario)} each</p>
+                          <p className="text-xs text-gray-700">{formatCurrency(item.valor_unitario)} each</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -298,7 +298,7 @@ export default function VendasPage() {
 
                     <div className="border-t pt-4">
                       <div className="mb-4">
-                        <label className="block text-sm text-gray-600 mb-1">Cliente (opcional)</label>
+                        <label className="block text-sm text-gray-900 mb-1">Cliente (opcional)</label>
                         <select
                           value={selectedCliente}
                           onChange={(e) => setSelectedCliente(e.target.value)}
@@ -309,7 +309,7 @@ export default function VendasPage() {
                         </select>
                       </div>
                       <div className="mb-4">
-                        <label className="block text-sm text-gray-600 mb-1">Forma de Pagamento</label>
+                        <label className="block text-sm text-gray-900 mb-1">Forma de Pagamento</label>
                         <select
                           value={formaPagamento}
                           onChange={(e) => setFormaPagamento(e.target.value)}

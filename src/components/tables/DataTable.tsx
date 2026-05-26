@@ -82,7 +82,7 @@ export default function DataTable<T>({
   if (loading) {
     return (
       <div className="bg-white rounded-lg border">
-        <div className="p-8 text-center text-gray-500">Carregando...</div>
+        <div className="p-8 text-center text-gray-700">Carregando...</div>
       </div>
     )
   }
@@ -111,7 +111,7 @@ export default function DataTable<T>({
               {columns.map(col => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-left text-sm font-semibold text-gray-700 ${col.headerClassName || ''} ${col.sortable !== false ? 'cursor-pointer select-none' : ''}`}
+                  className={`px-4 py-3 text-left text-sm font-semibold text-gray-900 ${col.headerClassName || ''} ${col.sortable !== false ? 'cursor-pointer select-none' : ''}`}
                   onClick={() => col.sortable !== false && toggleSort(col.key)}
                 >
                   <div className="flex items-center gap-1">
@@ -125,7 +125,7 @@ export default function DataTable<T>({
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-700">
                   {emptyMessage}
                 </td>
               </tr>
@@ -146,7 +146,7 @@ export default function DataTable<T>({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-900">
             {sorted.length} registro(s) — Página {page} de {totalPages}
           </span>
           <div className="flex items-center gap-1">

@@ -114,7 +114,7 @@ export default function ContasPagarPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Contas a Pagar</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-900">
             Total pendente: <span className="font-bold">{formatCurrency(totalPendente)}</span>
             {contasAtrasadas.length > 0 && (
               <span className="ml-4 text-red-600">
@@ -134,7 +134,7 @@ export default function ContasPagarPage() {
             key={status}
             onClick={() => setStatusFilter(status)}
             className={`px-4 py-2 rounded-md text-sm ${
-              statusFilter === status ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              statusFilter === status ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
             {status === '' ? 'Todos' : status.charAt(0).toUpperCase() + status.slice(1)}
@@ -166,7 +166,7 @@ export default function ContasPagarPage() {
                       <tr key={conta.id} className={`border-b hover:bg-gray-50 ${isAtrasado ? 'bg-red-50' : ''}`}>
                         <td className="py-3 px-4">
                           <div>{conta.descricao}</div>
-                          {conta.documento && <div className="text-xs text-gray-500">Doc: {conta.documento}</div>}
+                          {conta.documento && <div className="text-xs text-gray-800">Doc: {conta.documento}</div>}
                         </td>
                         <td className="py-3 px-4">{(conta as any).fornecedores?.razao_social || '-'}</td>
                         <td className="py-3 px-4">
@@ -208,7 +208,7 @@ export default function ContasPagarPage() {
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Fornecedor</label>
                 <select name="fornecedor_id" defaultValue={editing?.fornecedor_id || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   {fornecedores.map(f => <option key={f.id} value={f.id}>{f.razao_social}</option>)}

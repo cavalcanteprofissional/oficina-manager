@@ -178,11 +178,11 @@ export default function ClientesPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">CPF/CNPJ</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefone</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Cidade</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">CPF/CNPJ</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Telefone</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Cidade</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -212,7 +212,7 @@ export default function ClientesPage() {
                 </table>
               </div>
               {clientes.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-700">
                   Nenhum cliente encontrado
                 </div>
               )}
@@ -228,7 +228,7 @@ export default function ClientesPage() {
               <h2 className="text-lg font-semibold">
                 {editingCliente ? 'Editar Cliente' : 'Novo Cliente'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowModal(false)} className="text-gray-700 hover:text-gray-900">
                 <X size={24} />
               </button>
             </div>
