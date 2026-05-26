@@ -61,6 +61,7 @@ export default function CaixaPage() {
       valor: parseFloat(formData.get('valor') as string),
       forma_pagamento: formData.get('forma_pagamento') || null,
       categoria: formData.get('categoria') || null,
+      observacoes: formData.get('observacoes') || null,
     }])
 
     setSaving(false)
@@ -213,6 +214,7 @@ export default function CaixaPage() {
                 </select>
               </div>
               <Input label="Categoria" name="categoria" />
+              <Input label="Observações" name="observacoes" />
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
                 <Button type="submit" loading={saving}>Salvar</Button>

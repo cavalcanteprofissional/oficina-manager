@@ -193,7 +193,6 @@ export default function VendasPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Nº Venda</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Nº</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Data</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Cliente</th>

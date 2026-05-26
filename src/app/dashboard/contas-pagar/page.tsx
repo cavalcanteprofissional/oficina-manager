@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Plus, Loader2, X, Search, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Loader2, X, Search, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
 
 interface Fornecedor {
   id: string
@@ -27,6 +27,7 @@ interface ContaPagar {
   desconto: number
   status: string
   categoria: string | null
+  observacoes: string | null
   fornecedores?: Fornecedor
 }
 
@@ -78,6 +79,7 @@ export default function ContasPagarPage() {
       multa: parseFloat(formData.get('multa') as string) || 0,
       desconto: parseFloat(formData.get('desconto') as string) || 0,
       categoria: formData.get('categoria') || null,
+      observacoes: formData.get('observacoes') || null,
     }
 
     if (editing) {
@@ -90,6 +92,11 @@ export default function ContasPagarPage() {
     setShowModal(false)
     setEditing(null)
     fetchContas()
+  }
+
+  const handleEdit = (conta: ContaPagar) => {
+    setEditing(conta)
+    setShowModal(true)
   }
 
   const pagarConta = async (conta: ContaPagar) => {
@@ -183,6 +190,9 @@ export default function ContasPagarPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
+                          <button onClick={() => handleEdit(conta)} className="text-blue-600 hover:text-blue-800 mr-3">
+                            <Edit2 size={18} />
+                          </button>
                           {conta.status === 'pendente' && (
                             <Button size="sm" variant="outline" onClick={() => pagarConta(conta)}>
                               <CheckCircle size={14} className="mr-1" /> Pagar
@@ -227,6 +237,7 @@ export default function ContasPagarPage() {
                 <Input label="Desconto" name="desconto" type="number" step="0.01" defaultValue={editing?.desconto || '0'} />
               </div>
               <Input label="Categoria" name="categoria" defaultValue={editing?.categoria || ''} />
+              <Input label="Observações" name="observacoes" defaultValue={editing?.observacoes || ''} />
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
                 <Button type="submit" loading={saving}>Salvar</Button>

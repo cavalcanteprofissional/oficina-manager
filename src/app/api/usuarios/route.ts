@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { usuarioSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -45,6 +46,11 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
   
+  const parsed = usuarioSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
+  
   const { data: userData } = await supabase.auth.getUser()
   
   if (!userData.user) {
@@ -61,15 +67,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Acesso negado. Apenas administradores podem criar usuários.' }, { status: 403 })
   }
   
-  const { id, nome, cpf, telefone, role, ativo } = body
+  const { id, nome, email, senha, cpf, telefone, role, ativo } = parsed.data
   
-  if (!nome || !role) {
-    return NextResponse.json({ error: 'Nome e role são obrigatórios' }, { status: 400 })
+  if (!id && !senha) {
+    return NextResponse.json({ error: 'Senha é obrigatória para novos usuários' }, { status: 400 })
+  }
+
+  let userId = id
+
+  if (!userId) {
+    const authEmail = email || `${nome.toLowerCase().replace(/\s+/g, '.')}@oficina.local`
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: authEmail,
+      password: senha!,
+      email_confirm: true,
+      user_metadata: { nome, role }
+    })
+    if (authError) {
+      return NextResponse.json({ error: authError.message }, { status: 400 })
+    }
+    userId = authData.user.id
   }
   
   const { data, error } = await supabase
     .from('usuarios')
-    .upsert({ id, nome, cpf, telefone, role, ativo })
+    .upsert({ id: userId, nome, email, cpf, telefone, role, ativo })
     .select()
     .single()
     

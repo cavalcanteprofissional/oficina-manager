@@ -20,6 +20,10 @@ interface Produto {
   categoria: string | null
   marca: string | null
   unidade_medida: string | null
+  ncm: string | null
+  cest: string | null
+  origem: number | null
+  fornecedor_id: string | null
   ativo: boolean
 }
 
@@ -67,6 +71,9 @@ export default function ProdutosPage() {
       estoque_atual: parseInt(formData.get('estoque_atual') as string) || 0,
       localizacao: formData.get('localizacao') || null,
       ncm: formData.get('ncm') || null,
+      cest: formData.get('cest') || null,
+      origem: parseInt(formData.get('origem') as string) || null,
+      fornecedor_id: formData.get('fornecedor_id') || null,
       ativo: true,
     }
     
@@ -165,13 +172,15 @@ export default function ProdutosPage() {
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Código *" name="codigo" required defaultValue={editing?.codigo} />
-                <Input label="Código de Barras" name="codigo_barras" defaultValue={''} />
+                <Input label="Código de Barras" name="codigo_barras" defaultValue={editing?.codigo_barras || ''} />
                 <Input label="Nome *" name="nome" required defaultValue={editing?.nome} className="md:col-span-2" />
-                <Input label="Descrição" name="descricao" className="md:col-span-2" defaultValue={''} />
+                <Input label="Descrição" name="descricao" className="md:col-span-2" defaultValue={editing?.descricao || ''} />
                 <Input label="Categoria" name="categoria" defaultValue={editing?.categoria || ''} />
                 <Input label="Marca" name="marca" defaultValue={editing?.marca || ''} />
                 <Input label="Unidade" name="unidade_medida" defaultValue={editing?.unidade_medida || 'UN'} />
-                <Input label="NCM" name="ncm" defaultValue={''} />
+                <Input label="NCM" name="ncm" defaultValue={editing?.ncm || ''} />
+                <Input label="CEST" name="cest" defaultValue={''} />
+                <Input label="Origem" name="origem" type="number" defaultValue={''} />
                 <Input label="Preço Custo *" name="preco_custo" type="number" step="0.01" required defaultValue={editing?.preco_custo} />
                 <Input label="Preço Venda *" name="preco_venda" type="number" step="0.01" required defaultValue={editing?.preco_venda} />
                 <Input label="Estoque Mínimo" name="estoque_minimo" type="number" defaultValue={editing?.estoque_minimo || 0} />

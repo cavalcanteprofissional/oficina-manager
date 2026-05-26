@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Loader2, Users, Wrench, ShoppingCart, TrendingUp, Calendar } from 'lucide-react'
+import { Loader2, Users, Wrench, ShoppingCart, TrendingUp, Calendar, Car } from 'lucide-react'
 
 export default function RelatoriosPage() {
   const [loading, setLoading] = useState(true)
@@ -42,6 +42,7 @@ export default function RelatoriosPage() {
       { data: vendas },
       { data: aniversariantes },
       { data: osItens },
+      { data: vendaItens },
     ] = await Promise.all([
       supabase.from('clientes').select('*', { count: 'exact', head: true }),
       supabase.from('veiculos').select('*', { count: 'exact', head: true }),
@@ -52,6 +53,7 @@ export default function RelatoriosPage() {
       supabase.from('vendas').select('*').gte('data_venda', primeiroDia).lte('data_venda', ultimoDia),
       supabase.from('clientes').select('nome, data_nascimento, telefone1').not('data_nascimento', 'is', null),
       supabase.from('os_itens').select('*'),
+      supabase.from('venda_itens').select('*, produtos(nome)'),
     ])
 
     const receitaMes = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0
@@ -64,13 +66,21 @@ export default function RelatoriosPage() {
       return mes === mesAtual
     }) || []
 
-    // Top produtos vendidos
+    // Top produtos vendidos (OS + Vendas)
     const produtosCount: Record<string, { nome: string; qtd: number }> = {}
     osItens?.filter((i: any) => i.tipo_item === 'produto').forEach((item: any) => {
       if (produtosCount[item.descricao]) {
         produtosCount[item.descricao].qtd += item.quantidade
       } else {
         produtosCount[item.descricao] = { nome: item.descricao, qtd: item.quantidade }
+      }
+    })
+    vendaItens?.forEach((item: any) => {
+      const nome = item.produtos?.nome || 'Produto'
+      if (produtosCount[nome]) {
+        produtosCount[nome].qtd += item.quantidade
+      } else {
+        produtosCount[nome] = { nome, qtd: item.quantidade }
       }
     })
     const topProdutos = Object.values(produtosCount).sort((a: any, b: any) => b.qtd - a.qtd).slice(0, 5)
@@ -126,6 +136,17 @@ export default function RelatoriosPage() {
               <div>
                 <p className="text-sm text-gray-900">Clientes</p>
                 <p className="text-xl font-bold">{relatorio.clientes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-cyan-100 rounded-lg"><Car className="text-cyan-600" size={20} /></div>
+              <div>
+                <p className="text-sm text-gray-900">Veículos</p>
+                <p className="text-xl font-bold">{relatorio.veiculos}</p>
               </div>
             </div>
           </CardContent>

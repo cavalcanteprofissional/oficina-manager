@@ -1,32 +1,48 @@
-# TODO - Migração middleware.ts → proxy.ts (Next.js 16)
+# 🚗 Oficina Manager - Correção de Erros de Exibição
 
-## Objetivo
-Migrar o arquivo `middleware.ts` (deprecado no Next.js 16) para a nova convenção `proxy.ts`.
+## 🔴 CRÍTICOS ✅
 
-## Alterações
+### C1. Cabeçalhos duplicados em tabelas ✅
+- **Arquivos**: `mecanicos/page.tsx`, `servicos/page.tsx`, `vendas/page.tsx`
+- **Correção**: Removidas linhas de `<th>` duplicadas.
 
-### 1. Renomear arquivo
-- `src/middleware.ts` → `src/proxy.ts`
+### C2. CEP: `localizacao` → `localidade` ✅
+- **Arquivos**: `lib/utils/cep.ts:6`, `clientes/page.tsx:67`, `fornecedores/page.tsx:49`
 
-### 2. Renomear função exportada
-- `export async function middleware(...)` → `export async function proxy(...)`
+### C3. Campo `itens` em `ordens_servico` ✅
+- **Arquivo**: `ordens-servico/page.tsx:179`
 
-### 3. Verificar build
-- Rodar `npm run build` para garantir que não há erros
-- Verificar se o warning `middleware-to-proxy` sumiu
+## 🟡 ALTOS ✅
 
-## Detalhes técnicos
+### A1-A6 - Todas corrigidas ✅
 
-| Item | Antes | Depois |
-|------|-------|--------|
-| Arquivo | `src/middleware.ts` | `src/proxy.ts` |
-| Função | `middleware()` | `proxy()` |
-| Runtime | Edge (padrão) | Node.js (padrão no Next.js 16) |
-| API | NextRequest/NextResponse | idêntica |
-| Config matcher | Mesmo | mesmo |
+## 🔵 MÉDIOS
+
+### M1. Paginação sem controles UI ⏳
+- **Arquivo**: `clientes/page.tsx:83`
+- **Correção**: Adicionar navegação de páginas.
+
+### M2. Colunas faltando em tabela de fornecedores ⏳
+- **Arquivo**: `fornecedores/page.tsx:146-157`
+- **Correção**: Adicionar `email`, `nome_fantasia`, `contato_nome`.
+
+### M3. Sem botão "Editar" em contas-pagar/receber ⏳
+- **Arquivo**: `contas-pagar/page.tsx:186-191`, `contas-receber/page.tsx:64-85`
+
+### M4. `[supabase]` no useEffect ✅
+
+## ⚪ BAIXOS
+
+### B1. Zod schemas não aplicados nas APIs ⏳
+### B2. `ajuste` tratado como saída no estoque ⏳
+### B3. Sem campo de senha em usuários ⏳
 
 ## Status
-- [x] Planejamento concluído
-- [x] Renomear arquivo
-- [x] Renomear função
-- [x] Verificar build
+
+- [x] C1-C3, A1-A6, M4
+- [ ] M1 - Paginação UI
+- [ ] M2 - Colunas fornecedores
+- [ ] M3 - Botão editar contas
+- [ ] B1 - Zod schemas
+- [ ] B2 - ajuste estoque
+- [ ] B3 - Senha usuários

@@ -3,6 +3,7 @@ export type Role = 'admin' | 'gerente' | 'mecanico' | 'caixa' | 'comum'
 export interface Usuario {
   id: string
   nome: string
+  email?: string
   cpf?: string
   telefone?: string
   role: Role

@@ -77,22 +77,31 @@ export default function EstoquePage() {
     setSaving(true)
     const formData = new FormData(e.currentTarget)
     
+    const tipo = formData.get('tipo_movimento') as string
+    const qtd = parseInt(formData.get('quantidade') as string)
+
+    const saldoAtual = tipo === 'entrada'
+      ? selectedProduto!.estoque_atual + qtd
+      : tipo === 'ajuste'
+        ? selectedProduto!.estoque_atual + qtd
+        : selectedProduto!.estoque_atual - qtd
+
     await supabase.from('estoque_movimentos').insert([{
       produto_id: selectedProduto!.id,
-      tipo_movimento: formData.get('tipo_movimento'),
-      quantidade: parseInt(formData.get('quantidade') as string),
+      tipo_movimento: tipo,
+      quantidade: qtd,
       saldo_anterior: selectedProduto!.estoque_atual,
-      saldo_atual: formData.get('tipo_movimento') === 'entrada' 
-        ? selectedProduto!.estoque_atual + parseInt(formData.get('quantidade') as string)
-        : selectedProduto!.estoque_atual - parseInt(formData.get('quantidade') as string),
+      saldo_atual: saldoAtual,
       documento: formData.get('documento') || null,
       observacoes: formData.get('observacoes') || null,
     }])
 
     // Atualizar estoque
-    const novaQtd = formData.get('tipo_movimento') === 'entrada'
-      ? selectedProduto!.estoque_atual + parseInt(formData.get('quantidade') as string)
-      : selectedProduto!.estoque_atual - parseInt(formData.get('quantidade') as string)
+    const novaQtd = tipo === 'entrada'
+      ? selectedProduto!.estoque_atual + qtd
+      : tipo === 'ajuste'
+        ? selectedProduto!.estoque_atual + qtd
+        : selectedProduto!.estoque_atual - qtd
     
     await supabase.from('produtos').update({ estoque_atual: novaQtd }).eq('id', selectedProduto!.id)
 
@@ -208,7 +217,7 @@ export default function EstoquePage() {
                   </div>
                   <div>
                     <label className="block text-sm text-gray-900 mb-1">Quantidade *</label>
-                    <Input type="number" name="quantidade" min="1" required defaultValue="1" />
+                    <Input type="number" name="quantidade" required defaultValue="1" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-900 mb-1">Documento</label>

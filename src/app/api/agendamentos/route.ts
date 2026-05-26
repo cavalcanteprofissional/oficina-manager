@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { agendamentoSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -23,16 +24,21 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
+  
+  const parsed = agendamentoSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
 
   const { data, error } = await supabase.from('agendamentos').insert([{
-    cliente_id: body.cliente_id,
-    veiculo_id: body.veiculo_id,
-    servico_id: body.servico_id || null,
-    data_agendamento: body.data_agendamento,
-    hora_agendamento: body.hora_agendamento,
-    mecanico_id: body.mecanico_id || null,
+    cliente_id: parsed.data.cliente_id,
+    veiculo_id: parsed.data.veiculo_id,
+    servico_id: parsed.data.servico_id || null,
+    data_agendamento: parsed.data.data_agendamento,
+    hora_agendamento: parsed.data.hora_agendamento,
+    mecanico_id: parsed.data.mecanico_id || null,
     status: 'agendado',
-    observacoes: body.observacoes || null,
+    observacoes: parsed.data.observacoes || null,
   }]).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

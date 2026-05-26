@@ -212,6 +212,8 @@ export const caixaSchema = z.object({
 export const usuarioSchema = z.object({
   id: z.string().uuid(),
   nome: z.string().min(1, 'Nome é obrigatório'),
+  email: z.string().email().optional().or(z.literal('')).nullable(),
+  senha: z.string().optional().nullable(),
   cpf: z.string().optional().nullable(),
   telefone: z.string().optional().nullable(),
   role: z.enum(['admin', 'gerente', 'mecanico', 'caixa', 'comum']),

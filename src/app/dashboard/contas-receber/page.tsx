@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent } from '@/components/ui/Card'
-import { Plus, Loader2, X, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Loader2, X, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
 
 interface Cliente {
   id: string
@@ -27,6 +27,7 @@ interface ContaReceber {
   desconto: number
   status: string
   forma_recebimento: string | null
+  observacoes: string | null
   clientes?: Cliente
 }
 
@@ -37,6 +38,7 @@ export default function ContasReceberPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [editing, setEditing] = useState<ContaReceber | null>(null)
   const supabase = createClient()
 
   const fetchContas = async () => {
@@ -65,8 +67,8 @@ export default function ContasReceberPage() {
     e.preventDefault()
     setSaving(true)
     const formData = new FormData(e.currentTarget)
-    
-    await supabase.from('contas_receber').insert([{
+
+    const data = {
       cliente_id: formData.get('cliente_id') || null,
       descricao: formData.get('descricao'),
       documento: formData.get('documento') || null,
@@ -77,10 +79,18 @@ export default function ContasReceberPage() {
       multa: parseFloat(formData.get('multa') as string) || 0,
       desconto: parseFloat(formData.get('desconto') as string) || 0,
       forma_recebimento: formData.get('forma_recebimento') || null,
-    }])
+      observacoes: formData.get('observacoes') || null,
+    }
+
+    if (editing) {
+      await supabase.from('contas_receber').update(data).eq('id', editing.id)
+    } else {
+      await supabase.from('contas_receber').insert([data])
+    }
 
     setSaving(false)
     setShowModal(false)
+    setEditing(null)
     fetchContas()
   }
 
@@ -92,6 +102,11 @@ export default function ContasReceberPage() {
       valor_recebido: valorRecebido
     }).eq('id', conta.id)
     fetchContas()
+  }
+
+  const handleEdit = (conta: ContaReceber) => {
+    setEditing(conta)
+    setShowModal(true)
   }
 
   const formatCurrency = (value: number) => 
@@ -112,7 +127,7 @@ export default function ContasReceberPage() {
             <span className="ml-4">Recebido: <span className="font-bold text-green-600">{formatCurrency(totalRecebido)}</span></span>
           </p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
+        <Button onClick={() => { setEditing(null); setShowModal(true) }}>
           <Plus size={18} className="mr-2" /> Nova Conta
         </Button>
       </div>
@@ -172,6 +187,9 @@ export default function ContasReceberPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
+                          <button onClick={() => handleEdit(conta)} className="text-blue-600 hover:text-blue-800 mr-3">
+                            <Edit2 size={18} />
+                          </button>
                           {conta.status === 'pendente' && (
                             <Button size="sm" variant="outline" onClick={() => receberConta(conta)}>
                               <CheckCircle size={14} className="mr-1" /> Receber
@@ -192,32 +210,32 @@ export default function ContasReceberPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-lg">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">Nova Conta a Receber</h2>
+              <h2 className="text-lg font-semibold">{editing ? 'Editar' : 'Nova'} Conta a Receber</h2>
               <button onClick={() => setShowModal(false)}><X size={24} /></button>
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-1">Cliente</label>
-                <select name="cliente_id" className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select name="cliente_id" defaultValue={editing?.cliente_id || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </div>
-              <Input label="Descrição *" name="descricao" required />
-              <Input label="Documento" name="documento" />
+              <Input label="Descrição *" name="descricao" required defaultValue={editing?.descricao} />
+              <Input label="Documento" name="documento" defaultValue={editing?.documento || ''} />
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Data Emissão *" name="data_emissao" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
-                <Input label="Data Vencimento *" name="data_vencimento" type="date" required />
+                <Input label="Data Emissão *" name="data_emissao" type="date" required defaultValue={editing?.data_emissao || new Date().toISOString().split('T')[0]} />
+                <Input label="Data Vencimento *" name="data_vencimento" type="date" required defaultValue={editing?.data_vencimento} />
               </div>
-              <Input label="Valor *" name="valor" type="number" step="0.01" required />
+              <Input label="Valor *" name="valor" type="number" step="0.01" required defaultValue={editing?.valor} />
               <div className="grid grid-cols-3 gap-4">
-                <Input label="Juros" name="juros" type="number" step="0.01" defaultValue="0" />
-                <Input label="Multa" name="multa" type="number" step="0.01" defaultValue="0" />
-                <Input label="Desconto" name="desconto" type="number" step="0.01" defaultValue="0" />
+                <Input label="Juros" name="juros" type="number" step="0.01" defaultValue={editing?.juros || '0'} />
+                <Input label="Multa" name="multa" type="number" step="0.01" defaultValue={editing?.multa || '0'} />
+                <Input label="Desconto" name="desconto" type="number" step="0.01" defaultValue={editing?.desconto || '0'} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-1">Forma Recebimento</label>
-                <select name="forma_recebimento" className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select name="forma_recebimento" defaultValue={editing?.forma_recebimento || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="">Selecione</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Pix">Pix</option>
@@ -227,6 +245,7 @@ export default function ContasReceberPage() {
                   <option value="Transferência">Transferência</option>
                 </select>
               </div>
+              <Input label="Observações" name="observacoes" defaultValue={editing?.observacoes || ''} />
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
                 <Button type="submit" loading={saving}>Salvar</Button>

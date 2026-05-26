@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { caixaSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -30,6 +31,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
+  
+  const parsed = caixaSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
 
   // Buscar último movimento para calcular saldo
   const { data: ultimo } = await supabase
@@ -40,19 +46,19 @@ export async function POST(request: Request) {
     .single()
 
   const saldoAnterior = ultimo?.saldo_atual || 0
-  const saldoAtual = body.tipo_movimento === 'entrada' || body.tipo_movimento === 'suprimento'
-    ? saldoAnterior + body.valor
-    : saldoAnterior - body.valor
+  const saldoAtual = parsed.data.tipo_movimento === 'entrada' || parsed.data.tipo_movimento === 'suprimento'
+    ? saldoAnterior + parsed.data.valor
+    : saldoAnterior - parsed.data.valor
 
   const { data, error } = await supabase.from('caixa_movimentos').insert([{
-    tipo_movimento: body.tipo_movimento,
-    categoria: body.categoria || null,
-    descricao: body.descricao,
-    valor: body.valor,
-    forma_pagamento: body.forma_pagamento || null,
+    tipo_movimento: parsed.data.tipo_movimento,
+    categoria: parsed.data.categoria || null,
+    descricao: parsed.data.descricao,
+    valor: parsed.data.valor,
+    forma_pagamento: parsed.data.forma_pagamento || null,
     saldo_anterior: saldoAnterior,
     saldo_atual: saldoAtual,
-    observacoes: body.observacoes || null,
+    observacoes: parsed.data.observacoes || null,
   }]).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

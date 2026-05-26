@@ -64,7 +64,7 @@ export default function ClientesPage() {
       bairroInput.dispatchEvent(event)
     }
     if (cidadeInput) {
-      cidadeInput.value = data.localizacao
+      cidadeInput.value = data.localidade
       cidadeInput.dispatchEvent(event)
     }
     if (estadoInput) {
@@ -89,8 +89,13 @@ export default function ClientesPage() {
   }
 
   useEffect(() => {
+    if (pagination.page === 1) fetchClientes()
+    else setPagination(p => ({ ...p, page: 1 }))
+  }, [search])
+
+  useEffect(() => {
     fetchClientes()
-  }, [search, pagination.page])
+  }, [pagination.page])
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -100,6 +105,8 @@ export default function ClientesPage() {
     const cliente = {
       nome: formData.get('nome'),
       cpf_cnpj: formData.get('cpf_cnpj') || null,
+      rg_ie: formData.get('rg_ie') || null,
+      data_nascimento: formData.get('data_nascimento') || null,
       email: formData.get('email') || null,
       telefone1: formData.get('telefone1'),
       telefone2: formData.get('telefone2') || null,
@@ -216,6 +223,29 @@ export default function ClientesPage() {
                   Nenhum cliente encontrado
                 </div>
               )}
+              {pagination.totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t">
+                  <p className="text-sm text-gray-700">
+                    Mostrando página {pagination.page} de {pagination.totalPages} ({pagination.total} registros)
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                      disabled={pagination.page <= 1}
+                      className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 hover:bg-gray-100"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                      disabled={pagination.page >= pagination.totalPages}
+                      className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 hover:bg-gray-100"
+                    >
+                      Próximo
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </CardContent>
@@ -244,6 +274,17 @@ export default function ClientesPage() {
                   label="CPF/CNPJ"
                   name="cpf_cnpj"
                   defaultValue={editingCliente?.cpf_cnpj || ''}
+                />
+                <Input
+                  label="RG/IE"
+                  name="rg_ie"
+                  defaultValue={editingCliente?.rg_ie || ''}
+                />
+                <Input
+                  label="Data Nascimento"
+                  name="data_nascimento"
+                  type="date"
+                  defaultValue={editingCliente?.data_nascimento || ''}
                 />
                 <Input
                   label="E-mail"

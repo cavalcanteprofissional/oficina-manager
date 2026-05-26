@@ -170,8 +170,8 @@ export default function VeiculosPage() {
                 <Input label="Ano Fabricação" name="ano_fabricacao" type="number" defaultValue={editing?.ano_fabricacao || ''} />
                 <Input label="Ano Modelo" name="ano_modelo" type="number" defaultValue={editing?.ano_modelo || ''} />
                 <Input label="Cor" name="cor" defaultValue={editing?.cor || ''} />
-                <Input label="Chassi" name="chassi" defaultValue={''} />
-                <Input label="Renavam" name="renavam" defaultValue={''} />
+                <Input label="Chassi" name="chassi" defaultValue={editing?.chassi || ''} />
+                <Input label="Renavam" name="renavam" defaultValue={editing?.renavam || ''} />
                 <Input label="Km Atual" name="km_atual" type="number" defaultValue={editing?.km_atual || ''} />
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-1">Combustível</label>

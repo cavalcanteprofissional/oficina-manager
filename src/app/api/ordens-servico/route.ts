@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { ordemServicoSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -28,25 +29,30 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
   
+  const parsed = ordemServicoSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
+  
   // Calcular valor total dos itens
   let valorTotal = 0
-  if (body.itens && body.itens.length > 0) {
-    valorTotal = body.itens.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0)
+  if (parsed.data.itens && parsed.data.itens.length > 0) {
+    valorTotal = parsed.data.itens.reduce((acc: number, item: any) => acc + (item.valor_total || 0), 0)
   }
   
   const osData = {
-    cliente_id: body.cliente_id,
-    veiculo_id: body.veiculo_id,
-    mecanico_id: body.mecanico_id || null,
-    data_previsao: body.data_previsao || null,
-    km_veiculo: body.km_veiculo || null,
-    nivel_combustivel: body.nivel_combustivel || null,
-    problemas_relatados: body.problemas_relatados || null,
-    observacoes: body.observacoes || null,
+    cliente_id: parsed.data.cliente_id,
+    veiculo_id: parsed.data.veiculo_id,
+    mecanico_id: parsed.data.mecanico_id || null,
+    data_previsao: parsed.data.data_previsao || null,
+    km_veiculo: parsed.data.km_veiculo || null,
+    nivel_combustivel: parsed.data.nivel_combustivel || null,
+    problemas_relatados: parsed.data.problemas_relatados || null,
+    observacoes: parsed.data.observacoes || null,
     valor_total: valorTotal,
-    desconto: body.desconto || 0,
-    valor_final: valorTotal - (body.desconto || 0),
-    forma_pagamento: body.forma_pagamento || null,
+    desconto: parsed.data.desconto || 0,
+    valor_final: valorTotal - (parsed.data.desconto || 0),
+    forma_pagamento: parsed.data.forma_pagamento || null,
   }
 
   const { data: os, error } = await supabase.from('ordens_servico').insert([osData]).select().single()
@@ -54,8 +60,8 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   // Inserir itens da OS
-  if (body.itens && body.itens.length > 0) {
-    const itensData = body.itens.map((item: any) => ({
+  if (parsed.data.itens && parsed.data.itens.length > 0) {
+    const itensData = parsed.data.itens.map((item: any) => ({
       os_id: os.id,
       tipo_item: item.tipo_item,
       item_id: item.item_id,

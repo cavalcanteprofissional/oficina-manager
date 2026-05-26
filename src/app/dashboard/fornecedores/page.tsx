@@ -14,10 +14,19 @@ interface Fornecedor {
   razao_social: string
   nome_fantasia: string | null
   cnpj: string | null
+  inscricao_estadual: string | null
   telefone1: string
+  telefone2: string | null
   email: string | null
+  cep: string | null
+  endereco: string | null
+  numero: string | null
+  complemento: string | null
+  bairro: string | null
   cidade: string | null
   estado: string | null
+  contato_nome: string | null
+  observacoes: string | null
 }
 
 export default function FornecedoresPage() {
@@ -46,7 +55,7 @@ export default function FornecedoresPage() {
       bairroInput.dispatchEvent(event)
     }
     if (cidadeInput) {
-      cidadeInput.value = data.localizacao
+      cidadeInput.value = data.localidade
       cidadeInput.dispatchEvent(event)
     }
     if (estadoInput) {
@@ -136,8 +145,11 @@ export default function FornecedoresPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Razão Social</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome Fantasia</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">CNPJ</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">E-mail</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Telefone</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Contato</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Cidade</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-900">Ações</th>
                   </tr>
@@ -146,8 +158,11 @@ export default function FornecedoresPage() {
                   {fornecedores.map((f) => (
                     <tr key={f.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4 text-gray-900">{f.razao_social}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.nome_fantasia || '-'}</td>
                       <td className="py-3 px-4 text-gray-900">{f.cnpj || '-'}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.email || '-'}</td>
                       <td className="py-3 px-4 text-gray-900">{f.telefone1}</td>
+                      <td className="py-3 px-4 text-gray-900">{f.contato_nome || '-'}</td>
                       <td className="py-3 px-4 text-gray-900">{f.cidade || '-'}</td>
                       <td className="py-3 px-4 text-right">
                         <button onClick={() => { setEditing(f); setShowModal(true) }} className="text-blue-600 mr-3"><Edit2 size={18} /></button>
@@ -174,18 +189,22 @@ export default function FornecedoresPage() {
                 <Input label="Razão Social *" name="razao_social" required defaultValue={editing?.razao_social} />
                 <Input label="Nome Fantasia" name="nome_fantasia" defaultValue={editing?.nome_fantasia || ''} />
                 <Input label="CNPJ" name="cnpj" defaultValue={editing?.cnpj || ''} />
-                <Input label="Inscrição Estadual" name="inscricao_estadual" defaultValue={''} />
+                <Input label="Inscrição Estadual" name="inscricao_estadual" defaultValue={editing?.inscricao_estadual || ''} />
                 <Input label="E-mail" name="email" type="email" defaultValue={editing?.email || ''} />
                 <Input label="Telefone 1 *" name="telefone1" required defaultValue={editing?.telefone1} />
-                <Input label="Telefone 2" name="telefone2" defaultValue={''} />
-                <CEPInput label="CEP" name="cep" onCepFound={handleCepFound} defaultValue={''} />
-                <Input label="Endereço" name="endereco" className="md:col-span-2" defaultValue={''} />
-                <Input label="Número" name="numero" defaultValue={''} />
-                <Input label="Complemento" name="complemento" defaultValue={''} />
-                <Input label="Bairro" name="bairro" defaultValue={''} />
+                <Input label="Telefone 2" name="telefone2" defaultValue={editing?.telefone2 || ''} />
+                <CEPInput label="CEP" name="cep" onCepFound={handleCepFound} defaultValue={editing?.cep || ''} />
+                <Input label="Endereço" name="endereco" className="md:col-span-2" defaultValue={editing?.endereco || ''} />
+                <Input label="Número" name="numero" defaultValue={editing?.numero || ''} />
+                <Input label="Complemento" name="complemento" defaultValue={editing?.complemento || ''} />
+                <Input label="Bairro" name="bairro" defaultValue={editing?.bairro || ''} />
                 <Input label="Cidade" name="cidade" defaultValue={editing?.cidade || ''} />
                 <Input label="Estado" name="estado" maxLength={2} defaultValue={editing?.estado || ''} />
-                <Input label="Contato" name="contato_nome" defaultValue={''} />
+                <Input label="Contato" name="contato_nome" defaultValue={editing?.contato_nome || ''} />
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Observações</label>
+                  <textarea name="observacoes" rows={2} defaultValue={editing?.observacoes || ''} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>

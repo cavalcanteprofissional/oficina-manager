@@ -68,15 +68,15 @@ export default function DashboardPage() {
     }
 
     fetchStats()
-  }, [supabase])
+  }, [])
 
   const statCards = [
-    { name: 'Clientes', value: stats.clientes, icon: Users, color: 'bg-blue-500' },
-    { name: 'Veículos', value: stats.veiculos, icon: Car, color: 'bg-green-500' },
-    { name: 'Mecânicos', value: stats.mecanicos, icon: Wrench, color: 'bg-purple-500' },
-    { name: 'Produtos', value: stats.produtos, icon: ShoppingCart, color: 'bg-orange-500' },
-    { name: 'OS Abertas', value: stats.osAbertas, icon: ClipboardList, color: 'bg-yellow-500' },
-    { name: 'Vendas Hoje', value: `R$ ${stats.vendasHoje.toFixed(2)}`, icon: TrendingUp, color: 'bg-emerald-500' },
+    { name: 'Clientes', value: stats.clientes, icon: Users, color: 'bg-blue-500', format: false },
+    { name: 'Veículos', value: stats.veiculos, icon: Car, color: 'bg-green-500', format: false },
+    { name: 'Mecânicos', value: stats.mecanicos, icon: Wrench, color: 'bg-purple-500', format: false },
+    { name: 'Produtos', value: stats.produtos, icon: ShoppingCart, color: 'bg-orange-500', format: false },
+    { name: 'OS Abertas', value: stats.osAbertas, icon: ClipboardList, color: 'bg-yellow-500', format: false },
+    { name: 'Vendas Hoje', value: stats.vendasHoje, icon: TrendingUp, color: 'bg-emerald-500', format: true },
   ]
 
   if (loading) {
@@ -94,6 +94,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon
+          const displayValue = (card as any).format
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value as number)
+            : card.value
           return (
             <div key={card.name} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center gap-4">
@@ -102,7 +105,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-900">{card.name}</p>
-                  <p className="text-xl font-bold text-gray-900">{card.value}</p>
+                  <p className="text-xl font-bold text-gray-900">{displayValue}</p>
                 </div>
               </div>
             </div>

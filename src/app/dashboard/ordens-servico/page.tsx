@@ -17,6 +17,7 @@ interface Veiculo {
   placa: string
   modelo: string
   marca: string
+  cliente_id: string
 }
 
 interface Mecanico {
@@ -107,7 +108,7 @@ export default function OrdensServicoPage() {
   const fetchFormData = async () => {
     const [clientesRes, veiculosRes, mecanicosRes, produtosRes, servicosRes] = await Promise.all([
       supabase.from('clientes').select('id, nome').order('nome'),
-      supabase.from('veiculos').select('id, placa, modelo, marca').order('placa'),
+      supabase.from('veiculos').select('id, placa, modelo, marca, cliente_id').order('placa'),
       supabase.from('mecanicos').select('id, nome').eq('ativo', true).order('nome'),
       supabase.from('produtos').select('id, nome, preco_venda, estoque_atual').eq('ativo', true).order('nome'),
       supabase.from('servicos').select('id, nome, preco_sugerido').eq('ativo', true).order('nome'),
@@ -176,13 +177,23 @@ export default function OrdensServicoPage() {
       desconto: desconto,
       valor_final: valorTotal - desconto,
       forma_pagamento: formData.get('forma_pagamento') || null,
-      itens: itens,
     }
 
     if (editingOS) {
-      await supabase.from('ordens_servico').update(osData).eq('id', editingOS.id)
+      const { error: osError } = await supabase.from('ordens_servico').update(osData).eq('id', editingOS.id)
+      if (!osError) {
+        await supabase.from('os_itens').delete().eq('os_id', editingOS.id)
+        if (itens.length > 0) {
+          const itensData = itens.map(item => ({ ...item, os_id: editingOS.id }))
+          await supabase.from('os_itens').insert(itensData)
+        }
+      }
     } else {
-      await supabase.from('ordens_servico').insert([osData])
+      const { data: osCriada, error: osError } = await supabase.from('ordens_servico').insert([osData]).select()
+      if (!osError && osCriada && itens.length > 0) {
+        const itensData = itens.map(item => ({ ...item, os_id: osCriada[0].id }))
+        await supabase.from('os_itens').insert(itensData)
+      }
     }
 
     setSaving(false)
@@ -358,7 +369,7 @@ export default function OrdensServicoPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
                     <option value="">Selecione</option>
-                    {veiculos.filter(v => v.id === selectedVeiculo || !selectedCliente || true).map(v => <option key={v.id} value={v.id}>{v.placa} - {v.modelo}</option>)}
+                    {veiculos.filter(v => v.cliente_id === selectedCliente).map(v => <option key={v.id} value={v.id}>{v.placa} - {v.modelo}</option>)}
                   </select>
                 </div>
                 <div>

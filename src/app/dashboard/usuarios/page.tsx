@@ -53,12 +53,20 @@ export default function UsuariosPage() {
     setSaving(true)
     
     const formData = new FormData(e.currentTarget)
-    const usuarioData = {
+    const usuarioData: Record<string, any> = {
       nome: formData.get('nome'),
+      email: formData.get('email') || null,
+      senha: formData.get('senha') || null,
       cpf: formData.get('cpf') || null,
       telefone: formData.get('telefone') || null,
       role: formData.get('role'),
       ativo: formData.get('ativo') === 'on',
+    }
+
+    if (!editingUsuario && !usuarioData.senha) {
+      alert('Senha é obrigatória para novos usuários')
+      setSaving(false)
+      return
     }
 
     const url = editingUsuario ? `/api/usuarios/${editingUsuario.id}` : '/api/usuarios'
@@ -232,6 +240,20 @@ export default function UsuariosPage() {
                 required
                 defaultValue={editingUsuario?.nome}
               />
+              <Input
+                label="E-mail"
+                name="email"
+                type="email"
+                defaultValue={editingUsuario?.email || ''}
+              />
+              {!editingUsuario && (
+                <Input
+                  label="Senha *"
+                  name="senha"
+                  type="password"
+                  required
+                />
+              )}
               <Input
                 label="CPF"
                 name="cpf"

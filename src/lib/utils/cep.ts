@@ -3,7 +3,7 @@ export interface CEPResponse {
   logradouro: string
   complemento: string
   bairro: string
-  localizacao: string
+  localidade: string
   uf: string
   ibge: string
   gia: string

@@ -45,11 +45,11 @@ export async function PUT(
   }
   
   const body = await request.json()
-  const { nome, cpf, telefone, role, ativo } = body
+  const { nome, email, cpf, telefone, role, ativo } = body
   
   const { data, error } = await supabase
     .from('usuarios')
-    .update({ nome, cpf, telefone, role, ativo })
+    .update({ nome, email, cpf, telefone, role, ativo })
     .eq('id', id)
     .select()
     .single()

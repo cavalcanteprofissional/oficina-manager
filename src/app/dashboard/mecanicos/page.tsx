@@ -11,6 +11,7 @@ interface Mecanico {
   id: string
   nome: string
   cpf: string | null
+  data_contratacao: string | null
   telefone: string
   email: string | null
   cidade: string | null
@@ -110,8 +111,6 @@ export default function MecanicosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Nome</th>
-                    <th className="text-left py-3 px-4">CPF</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Nome</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">CPF</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-900">Telefone</th>
@@ -156,6 +155,7 @@ export default function MecanicosPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Nome *" name="nome" required defaultValue={editing?.nome} />
                 <Input label="CPF" name="cpf" defaultValue={editing?.cpf || ''} />
+                <Input label="Data Contratação" name="data_contratacao" type="date" defaultValue={editing?.data_contratacao || ''} />
                 <Input label="E-mail" name="email" type="email" defaultValue={editing?.email || ''} />
                 <Input label="Telefone *" name="telefone" required defaultValue={editing?.telefone} />
                 <Input label="Celular" name="celular" defaultValue={''} />
@@ -165,7 +165,12 @@ export default function MecanicosPage() {
                 <Input label="Bairro" name="bairro" defaultValue={''} />
                 <Input label="Cidade" name="cidade" defaultValue={editing?.cidade || ''} />
                 <Input label="Estado" name="estado" maxLength={2} defaultValue={''} />
+                <Input label="Salário" name="salario" type="number" step="0.01" defaultValue={''} />
                 <Input label="Comissão %" name="comissao_percentual" type="number" step="0.01" defaultValue={editing?.comissao_percentual || ''} />
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Observações</label>
+                  <textarea name="observacoes" rows={2} defaultValue={''} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
