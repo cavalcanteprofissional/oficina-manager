@@ -52,7 +52,7 @@ export default function EstoquePage() {
         .from('produtos')
         .select('*, fornecedores(razao_social)')
         .eq('ativo', true)
-        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
         .order('nome')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setProdutos(data)
@@ -100,30 +100,24 @@ export default function EstoquePage() {
     const tipo = formData.get('tipo_movimento') as string
     const qtd = parseInt(formData.get('quantidade') as string)
 
-    const saldoAtual = tipo === 'entrada'
-      ? selectedProduto!.estoque_atual + qtd
-      : tipo === 'ajuste'
-        ? selectedProduto!.estoque_atual + qtd
-        : selectedProduto!.estoque_atual - qtd
+    const response = await fetch('/api/estoque', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        produto_id: selectedProduto!.id,
+        tipo_movimento: tipo,
+        quantidade: qtd,
+        documento: formData.get('documento') || null,
+        observacoes: formData.get('observacoes') || null,
+      }),
+    })
 
-    await supabase.from('estoque_movimentos').insert([{
-      produto_id: selectedProduto!.id,
-      tipo_movimento: tipo,
-      quantidade: qtd,
-      saldo_anterior: selectedProduto!.estoque_atual,
-      saldo_atual: saldoAtual,
-      documento: formData.get('documento') || null,
-      observacoes: formData.get('observacoes') || null,
-    }])
-
-    // Atualizar estoque
-    const novaQtd = tipo === 'entrada'
-      ? selectedProduto!.estoque_atual + qtd
-      : tipo === 'ajuste'
-        ? selectedProduto!.estoque_atual + qtd
-        : selectedProduto!.estoque_atual - qtd
-    
-    await supabase.from('produtos').update({ estoque_atual: novaQtd }).eq('id', selectedProduto!.id)
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao registrar movimentação')
+      setSaving(false)
+      return
+    }
 
     setSaving(false)
     setShowHistory(false)

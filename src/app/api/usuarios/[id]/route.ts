@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 
 export async function GET(
   request: Request,
@@ -15,12 +16,12 @@ export async function GET(
   
   const { data, error } = await supabase
     .from('usuarios')
-    .select('*')
+    .select('id, nome, cpf, telefone, role, ativo, created_at')
     .eq('id', id)
     .single()
     
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'usuarios-[id]')
   }
   
   return NextResponse.json(data)
@@ -50,17 +51,17 @@ export async function PUT(
   }
   
   const body = await request.json()
-  const { nome, email, cpf, telefone, role, ativo } = body
+  const { nome, cpf, telefone, role, ativo } = body
   
   const { data, error } = await supabase
     .from('usuarios')
-    .update({ nome, email, cpf, telefone, role, ativo })
+    .update({ nome, cpf, telefone, role, ativo })
     .eq('id', id)
-    .select()
+    .select('id, nome, cpf, telefone, role, ativo, created_at')
     .single()
     
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'usuarios-[id]')
   }
   
   return NextResponse.json(data)
@@ -95,7 +96,7 @@ export async function DELETE(
     .eq('id', id)
     
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'usuarios-[id]')
   }
   
   return NextResponse.json({ success: true })

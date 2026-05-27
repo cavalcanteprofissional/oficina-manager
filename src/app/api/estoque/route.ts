@@ -1,30 +1,34 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 import { NextResponse } from 'next/server'
 import { estoqueSchema } from '@/lib/schemas'
 import { TIPOS_MOVIMENTO_ESTOQUE } from '@/lib/constants'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   const search = searchParams.get('search') || ''
 
   let query = supabase
     .from('produtos')
-    .select('*, fornecedores(razao_social)', { count: 'exact' })
+    .select('id, codigo, nome, descricao, categoria, marca, unidade_medida, preco_custo, preco_venda, margem_lucro, estoque_atual, estoque_minimo, localizacao, fornecedor_id, foto_url, ativo, created_at, fornecedores(razao_social)', { count: 'exact' })
     .eq('ativo', true)
 
   if (search) {
-    query = query.or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+    query = query.or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
   }
 
   const { data, error } = await query.order('nome')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'estoque')
   return NextResponse.json({ data })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
   
   const parsed = estoqueSchema.safeParse(body)
@@ -56,8 +60,8 @@ export async function POST(request: Request) {
     saldo_atual: saldoAtual,
     documento: parsed.data.documento || null,
     observacoes: parsed.data.observacoes || null,
-  }]).select().single()
+  }]).select('id, produto_id, tipo_movimento, quantidade, saldo_anterior, saldo_atual, documento, observacoes, created_at').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'estoque')
   return NextResponse.json(data, { status: 201 })
 }

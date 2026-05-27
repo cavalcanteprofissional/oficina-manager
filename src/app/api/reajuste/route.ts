@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { requireRole, handleError } from '@/lib/supabase/auth-helpers'
 
 const reajusteSchema = z.object({
   produtos: z.array(z.object({
@@ -11,7 +11,10 @@ const reajusteSchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
+
   const body = await request.json()
 
   const parsed = reajusteSchema.safeParse(body)
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
     }).eq('id', produto.id)
 
     if (error) {
-      return NextResponse.json({ error: `Erro ao atualizar produto ${produto.id}: ${error.message}` }, { status: 400 })
+      return handleError(error, 'reajuste')
     }
   }
 

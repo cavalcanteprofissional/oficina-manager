@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
 export default function RegisterPage() {
+  const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -13,7 +13,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const router = useRouter()
-  const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,25 +26,43 @@ export default function RegisterPage() {
       return
     }
 
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres')
+    if (password.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres')
       setLoading(false)
       return
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (error) {
-      setError(error.message)
+    if (!/[A-Z]/.test(password)) {
+      setError('A senha deve conter pelo menos uma letra maiúscula')
       setLoading(false)
-    } else {
-      setSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar.')
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      return
+    }
+
+    if (!/[0-9]/.test(password)) {
+      setError('A senha deve conter pelo menos um número')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, senha: password }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Erro ao criar conta. Tente novamente.')
+        setLoading(false)
+        return
+      }
+
+      setSuccess('Conta criada com sucesso! Redirecionando...')
+      setTimeout(() => router.push('/login'), 2000)
+    } catch {
+      setError('Erro ao criar conta. Tente novamente.')
+      setLoading(false)
     }
   }
 
@@ -70,6 +87,21 @@ export default function RegisterPage() {
                 {success}
               </div>
             )}
+
+            <div>
+              <label htmlFor="nome" className="block text-sm font-medium text-gray-900 mb-1">
+                Nome completo
+              </label>
+              <input
+                id="nome"
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="Seu nome"
+              />
+            </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-1">

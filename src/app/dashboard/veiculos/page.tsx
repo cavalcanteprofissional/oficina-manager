@@ -47,7 +47,7 @@ export default function VeiculosPage() {
       const { data, error: supabaseError } = await supabase
         .from('veiculos')
         .select('*, clientes(nome)')
-        .or(`placa.ilike.%${search}%,marca.ilike.%${search}%,modelo.ilike.%${search}%`)
+        .or(`placa.ilike.%${search}%`).or(`marca.ilike.%${search}%`).or(`modelo.ilike.%${search}%`)
         .order('placa')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setVeiculos(data)
@@ -86,6 +86,7 @@ export default function VeiculosPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
     const data = {
       cliente_id: formData.get('cliente_id'),
@@ -101,8 +102,32 @@ export default function VeiculosPage() {
       combustivel: formData.get('combustivel') || null,
       observacoes: formData.get('observacoes') || null,
     }
-    if (editing) await supabase.from('veiculos').update(data).eq('id', editing.id)
-    else await supabase.from('veiculos').insert([data])
+    try {
+      let response: Response
+      if (editing) {
+        response = await fetch('/api/veiculos/' + editing.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      } else {
+        response = await fetch('/api/veiculos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      }
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Erro ao salvar veículo')
+        setSaving(false)
+        return
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar veículo')
+      setSaving(false)
+      return
+    }
     setSaving(false)
     setShowModal(false)
     setEditing(null)
@@ -111,8 +136,17 @@ export default function VeiculosPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza?')) {
-      await supabase.from('veiculos').delete().eq('id', id)
-      fetchVeiculos()
+      try {
+        const response = await fetch('/api/veiculos/' + id, { method: 'DELETE' })
+        if (!response.ok) {
+          const result = await response.json()
+          setError(result.error || 'Erro ao excluir veículo')
+          return
+        }
+        fetchVeiculos()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir veículo')
+      }
     }
   }
 

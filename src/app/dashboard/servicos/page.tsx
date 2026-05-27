@@ -36,7 +36,7 @@ export default function ServicosPage() {
       const { data, error: supabaseError } = await supabase
         .from('servicos')
         .select('*')
-        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
         .order('nome')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setServicos(data)
@@ -68,8 +68,25 @@ export default function ServicosPage() {
       comissao_percentual: parseFloat(formData.get('comissao_percentual') as string) || 0,
       ativo: true,
     }
-    if (editing) await supabase.from('servicos').update(data).eq('id', editing.id)
-    else await supabase.from('servicos').insert([data])
+    try {
+      if (editing) {
+        const res = await fetch('/api/servicos/' + editing.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        if (!res.ok) throw new Error('Erro ao atualizar serviço')
+      } else {
+        const res = await fetch('/api/servicos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        if (!res.ok) throw new Error('Erro ao criar serviço')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar serviço')
+    }
     setSaving(false)
     setShowModal(false)
     setEditing(null)
@@ -78,7 +95,12 @@ export default function ServicosPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza?')) {
-      await supabase.from('servicos').delete().eq('id', id)
+      try {
+        const res = await fetch('/api/servicos/' + id, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Erro ao excluir serviço')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir serviço')
+      }
       fetchServicos()
     }
   }

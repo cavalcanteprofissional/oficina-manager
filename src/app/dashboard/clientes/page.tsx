@@ -80,7 +80,7 @@ export default function ClientesPage() {
       const { data, error } = await supabase
         .from('clientes')
         .select('*', { count: 'exact' })
-        .or(`nome.ilike.%${search}%,cpf_cnpj.ilike.%${search}%,telefone1.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`cpf_cnpj.ilike.%${search}%`).or(`telefone1.ilike.%${search}%`)
         .order('nome')
         .range((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit - 1)
 
@@ -116,7 +116,8 @@ export default function ClientesPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true)
-    
+    setError(null)
+
     const formData = new FormData(e.currentTarget)
     const cliente = {
       nome: formData.get('nome'),
@@ -136,16 +137,38 @@ export default function ClientesPage() {
       observacoes: formData.get('observacoes') || null,
     }
 
-    if (editingCliente) {
-      await supabase.from('clientes').update(cliente).eq('id', editingCliente.id)
-    } else {
-      await supabase.from('clientes').insert([cliente])
-    }
+    try {
+      let response: Response
 
-    setSaving(false)
-    setShowModal(false)
-    setEditingCliente(null)
-    fetchClientes()
+      if (editingCliente) {
+        response = await fetch('/api/clientes/' + editingCliente.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cliente),
+        })
+      } else {
+        response = await fetch('/api/clientes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cliente),
+        })
+      }
+
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Erro ao salvar cliente')
+        setSaving(false)
+        return
+      }
+
+      setSaving(false)
+      setShowModal(false)
+      setEditingCliente(null)
+      fetchClientes()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar cliente')
+      setSaving(false)
+    }
   }
 
   const handleEdit = (cliente: Cliente) => {
@@ -155,8 +178,17 @@ export default function ClientesPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este cliente?')) {
-      await supabase.from('clientes').delete().eq('id', id)
-      fetchClientes()
+      try {
+        const response = await fetch('/api/clientes/' + id, { method: 'DELETE' })
+        if (!response.ok) {
+          const result = await response.json()
+          setError(result.error || 'Erro ao excluir cliente')
+          return
+        }
+        fetchClientes()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir cliente')
+      }
     }
   }
 

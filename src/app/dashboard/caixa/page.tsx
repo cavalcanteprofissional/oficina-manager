@@ -69,14 +69,25 @@ export default function CaixaPage() {
     setSaving(true)
     const formData = new FormData(e.currentTarget)
     
-    await supabase.from('caixa_movimentos').insert([{
-      tipo_movimento: formData.get('tipo_movimento'),
-      descricao: formData.get('descricao'),
-      valor: parseFloat(formData.get('valor') as string),
-      forma_pagamento: formData.get('forma_pagamento') || null,
-      categoria: formData.get('categoria') || null,
-      observacoes: formData.get('observacoes') || null,
-    }])
+    const response = await fetch('/api/caixa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo_movimento: formData.get('tipo_movimento'),
+        descricao: formData.get('descricao'),
+        valor: parseFloat(formData.get('valor') as string),
+        forma_pagamento: formData.get('forma_pagamento') || null,
+        categoria: formData.get('categoria') || null,
+        observacoes: formData.get('observacoes') || null,
+      }),
+    })
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao salvar movimentação')
+      setSaving(false)
+      return
+    }
 
     setSaving(false)
     setShowModal(false)

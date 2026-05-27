@@ -108,10 +108,26 @@ export default function ContasReceberPage() {
       observacoes: formData.get('observacoes') || null,
     }
 
+    let response
     if (editing) {
-      await supabase.from('contas_receber').update(data).eq('id', editing.id)
+      response = await fetch('/api/contas-receber/' + editing.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
     } else {
-      await supabase.from('contas_receber').insert([data])
+      response = await fetch('/api/contas-receber', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+    }
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao salvar conta')
+      setSaving(false)
+      return
     }
 
     setSaving(false)
@@ -122,11 +138,21 @@ export default function ContasReceberPage() {
 
   const receberConta = async (conta: ContaReceber) => {
     const valorRecebido = conta.valor + conta.juros + conta.multa - conta.desconto
-    await supabase.from('contas_receber').update({
-      status: 'recebido',
-      data_recebimento: new Date().toISOString().split('T')[0],
-      valor_recebido: valorRecebido
-    }).eq('id', conta.id)
+    const response = await fetch('/api/contas-receber/' + conta.id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'recebido',
+        data_recebimento: new Date().toISOString().split('T')[0],
+        valor_recebido: valorRecebido,
+      }),
+    })
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao receber conta')
+      return
+    }
     fetchContas()
   }
 

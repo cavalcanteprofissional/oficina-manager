@@ -59,7 +59,7 @@ export default function VendasPage() {
         .select('*')
         .eq('ativo', true)
         .gt('estoque_atual', 0)
-        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
         .order('nome')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setProdutos(data)

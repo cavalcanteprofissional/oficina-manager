@@ -114,7 +114,7 @@ export default function UsuariosPage() {
       fetchUsuarios()
     } else {
       const result = await response.json()
-      alert(result.error || 'Erro ao excluir usuário')
+      addToast('error', 'Erro ao excluir usuário', result.error)
     }
   }
 

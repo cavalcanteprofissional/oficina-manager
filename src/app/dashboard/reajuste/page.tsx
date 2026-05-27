@@ -37,7 +37,7 @@ export default function ReajustePrecosPage() {
       .from('produtos')
       .select('id, codigo, nome, preco_custo, preco_venda, margem_lucro')
       .eq('ativo', true)
-      .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+      .or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
       .order('nome')
     if (data) setProdutos(data)
     setLoading(false)

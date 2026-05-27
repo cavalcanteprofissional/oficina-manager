@@ -1,27 +1,31 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 import { NextResponse } from 'next/server'
 import { contaReceberSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
 
   let query = supabase
     .from('contas_receber')
-    .select('*, clientes(nome)', { count: 'exact' })
+    .select('id, cliente_id, venda_id, os_id, descricao, documento, data_emissao, data_vencimento, data_recebimento, valor, valor_recebido, juros, multa, desconto, status, forma_recebimento, created_at, clientes(nome)', { count: 'exact' })
     .order('data_vencimento')
 
   if (status) query = query.eq('status', status)
 
   const { data, count, error } = await query
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'contas-receber')
   return NextResponse.json({ data, pagination: { total: count || 0 } })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente', 'caixa')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
   
   const parsed = contaReceberSchema.safeParse(body)
@@ -44,8 +48,8 @@ export async function POST(request: Request) {
     forma_recebimento: parsed.data.forma_recebimento || null,
     observacoes: parsed.data.observacoes || null,
     status: 'pendente',
-  }]).select().single()
+  }]).select('id, cliente_id, venda_id, os_id, descricao, documento, data_emissao, data_vencimento, data_recebimento, valor, valor_recebido, juros, multa, desconto, status, forma_recebimento, created_at').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'contas-receber')
   return NextResponse.json(data, { status: 201 })
 }

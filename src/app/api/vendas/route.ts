@@ -1,25 +1,29 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 import { NextResponse } from 'next/server'
 import { vendaSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   const page = parseInt(searchParams.get('page') || '1')
   const limit = parseInt(searchParams.get('limit') || '10')
 
   const { data, count, error } = await supabase
     .from('vendas')
-    .select('*, clientes(nome)', { count: 'exact' })
+    .select('id, numero_venda, cliente_id, data_venda, tipo_venda, subtotal, desconto, total, forma_pagamento, status, created_at, clientes(nome)', { count: 'exact' })
     .order('data_venda', { ascending: false })
     .range((page - 1) * limit, page * limit - 1)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'vendas')
   return NextResponse.json({ data, pagination: { page, limit, total: count || 0, totalPages: Math.ceil((count || 0) / limit) } })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente', 'caixa')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
 
   const parsed = vendaSchema.safeParse(body)
@@ -35,9 +39,9 @@ export async function POST(request: Request) {
     subtotal,
     total: subtotal - desconto,
     status: 'concluida',
-  }]).select().single()
+  }]).select('id, numero_venda, cliente_id, data_venda, tipo_venda, subtotal, desconto, total, forma_pagamento, status, created_at').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'vendas')
 
   if (itens && itens.length > 0) {
     const itensData = itens.map(item => ({
@@ -61,9 +65,23 @@ export async function POST(request: Request) {
         for (const produto of produtos) {
           const item = itens.find(i => i.produto_id === produto.id)
           if (item) {
+            const saldoAnterior = produto.estoque_atual || 0
+            const quantidade = item.quantidade
+            const saldoAtual = saldoAnterior - quantidade
+
             await supabase.from('produtos').update({
-              estoque_atual: (produto.estoque_atual || 0) - item.quantidade
+              estoque_atual: saldoAtual
             }).eq('id', produto.id)
+
+            await supabase.from('estoque_movimentos').insert({
+              produto_id: produto.id,
+              tipo_movimento: 'saida',
+              quantidade,
+              saldo_anterior: saldoAnterior,
+              saldo_atual: saldoAtual,
+              documento: `Venda #${venda.numero_venda}`,
+              documento_id: venda.id,
+            })
           }
         }
       }

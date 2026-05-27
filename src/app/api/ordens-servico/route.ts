@@ -1,9 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 import { NextResponse } from 'next/server'
 import { ordemServicoSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   const page = parseInt(searchParams.get('page') || '1')
   const limit = parseInt(searchParams.get('limit') || '10')
@@ -11,7 +13,7 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('ordens_servico')
-    .select('*, clientes(nome), veiculos(placa, modelo, marca), mecanicos(nome)', { count: 'exact' })
+    .select('id, numero_os, cliente_id, veiculo_id, mecanico_id, data_abertura, data_previsao, data_conclusao, status, km_veiculo, problemas_relatados, observacoes, valor_total, desconto, valor_final, forma_pagamento, created_at, clientes(nome), veiculos(placa, modelo, marca), mecanicos(nome)', { count: 'exact' })
 
   if (status) {
     query = query.eq('status', status)
@@ -21,12 +23,14 @@ export async function GET(request: Request) {
     .order('data_abertura', { ascending: false })
     .range((page - 1) * limit, page * limit - 1)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'ordens-servico-list')
   return NextResponse.json({ data, pagination: { page, limit, total: count || 0, totalPages: Math.ceil((count || 0) / limit) } })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
   
   const parsed = ordemServicoSchema.safeParse(body)
@@ -55,9 +59,9 @@ export async function POST(request: Request) {
     forma_pagamento: parsed.data.forma_pagamento || null,
   }
 
-  const { data: os, error } = await supabase.from('ordens_servico').insert([osData]).select().single()
+  const { data: os, error } = await supabase.from('ordens_servico').insert([osData]).select('id, numero_os, cliente_id, veiculo_id, mecanico_id, data_abertura, data_previsao, data_conclusao, status, km_veiculo, problemas_relatados, observacoes, valor_total, desconto, valor_final, forma_pagamento, created_at').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'ordens-servico-create')
 
   // Inserir itens da OS
   if (parsed.data.itens && parsed.data.itens.length > 0) {

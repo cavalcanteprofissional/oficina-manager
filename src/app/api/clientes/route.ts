@@ -1,9 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { clienteSchema } from '@/lib/schemas'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   
   const page = parseInt(searchParams.get('page') || '1')
@@ -14,10 +17,10 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('clientes')
-    .select('*', { count: 'exact' })
+    .select('id, nome, cpf_cnpj, email, telefone1, telefone2, endereco, numero, bairro, cidade, estado, data_nascimento, foto_url, observacoes, created_at', { count: 'exact' })
 
   if (search) {
-    query = query.or(`nome.ilike.%${search}%,cpf_cnpj.ilike.%${search}%,telefone1.ilike.%${search}%`)
+    query = query.or(`nome.ilike.%${search}%`).or(`cpf_cnpj.ilike.%${search}%`).or(`telefone1.ilike.%${search}%`)
   }
 
   query = query.order(sortBy, { ascending: sortOrder === 'asc' })
@@ -26,7 +29,7 @@ export async function GET(request: Request) {
     .range((page - 1) * limit, page * limit - 1)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'clientes')
   }
 
   return NextResponse.json({
@@ -41,7 +44,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
 
   const parsed = clienteSchema.safeParse(body)
@@ -52,11 +57,11 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from('clientes')
     .insert([parsed.data])
-    .select()
+    .select('id, nome, cpf_cnpj, email, telefone1, telefone2, endereco, numero, bairro, cidade, estado, data_nascimento, foto_url, observacoes, created_at')
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'clientes')
   }
 
   return NextResponse.json(data, { status: 201 })

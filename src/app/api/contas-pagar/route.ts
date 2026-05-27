@@ -1,27 +1,31 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 import { NextResponse } from 'next/server'
 import { contaPagarSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
 
   let query = supabase
     .from('contas_pagar')
-    .select('*, fornecedores(razao_social)', { count: 'exact' })
+    .select('id, fornecedor_id, descricao, documento, data_emissao, data_vencimento, data_pagamento, valor, valor_pago, juros, multa, desconto, status, categoria, created_at, fornecedores(razao_social)', { count: 'exact' })
     .order('data_vencimento')
 
   if (status) query = query.eq('status', status)
 
   const { data, count, error } = await query
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'contas-pagar')
   return NextResponse.json({ data, pagination: { total: count || 0 } })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireRole('admin', 'gerente', 'caixa')
+  if (auth.error) return auth.error
+  const supabase = auth.supabase
   const body = await request.json()
   
   const parsed = contaPagarSchema.safeParse(body)
@@ -42,8 +46,8 @@ export async function POST(request: Request) {
     categoria: parsed.data.categoria || null,
     observacoes: parsed.data.observacoes || null,
     status: 'pendente',
-  }]).select().single()
+  }]).select('id, fornecedor_id, descricao, documento, data_emissao, data_vencimento, data_pagamento, valor, valor_pago, juros, multa, desconto, status, categoria, created_at').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return handleError(error, 'contas-pagar')
   return NextResponse.json(data, { status: 201 })
 }

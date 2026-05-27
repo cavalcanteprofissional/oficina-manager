@@ -213,21 +213,24 @@ export default function OrdensServicoPage() {
       forma_pagamento: formData.get('forma_pagamento') || null,
     }
 
-    if (editingOS) {
-      const { error: osError } = await supabase.from('ordens_servico').update(osData).eq('id', editingOS.id)
-      if (!osError) {
-        await supabase.from('os_itens').delete().eq('os_id', editingOS.id)
-        if (itens.length > 0) {
-          const itensData = itens.map(item => ({ ...item, os_id: editingOS.id }))
-          await supabase.from('os_itens').insert(itensData)
-        }
+    try {
+      if (editingOS) {
+        const res = await fetch('/api/ordens-servico/' + editingOS.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...osData, itens }),
+        })
+        if (!res.ok) throw new Error('Erro ao atualizar OS')
+      } else {
+        const res = await fetch('/api/ordens-servico', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...osData, itens }),
+        })
+        if (!res.ok) throw new Error('Erro ao criar OS')
       }
-    } else {
-      const { data: osCriada, error: osError } = await supabase.from('ordens_servico').insert([osData]).select()
-      if (!osError && osCriada && itens.length > 0) {
-        const itensData = itens.map(item => ({ ...item, os_id: osCriada[0].id }))
-        await supabase.from('os_itens').insert(itensData)
-      }
+    } catch {
+      // silently ignore
     }
 
     setSaving(false)
@@ -240,13 +243,27 @@ export default function OrdensServicoPage() {
     if (newStatus === 'concluida') {
       updateData.data_conclusao = new Date().toISOString()
     }
-    await supabase.from('ordens_servico').update(updateData).eq('id', osId)
+    try {
+      const res = await fetch('/api/ordens-servico/' + osId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      })
+      if (!res.ok) throw new Error('Erro ao alterar status')
+    } catch {
+      // silently ignore
+    }
     fetchOrdens()
   }
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir?')) {
-      await supabase.from('ordens_servico').delete().eq('id', id)
+      try {
+        const res = await fetch('/api/ordens-servico/' + id, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Erro ao excluir OS')
+      } catch {
+        // silently ignore
+      }
       fetchOrdens()
     }
   }

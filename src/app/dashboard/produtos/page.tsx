@@ -44,7 +44,7 @@ export default function ProdutosPage() {
       const { data, error: supabaseError } = await supabase
         .from('produtos')
         .select('*')
-        .or(`nome.ilike.%${search}%,codigo.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`codigo.ilike.%${search}%`)
         .order('nome')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setProdutos(data)
@@ -90,8 +90,25 @@ export default function ProdutosPage() {
       ativo: true,
     }
     
-    if (editing) await supabase.from('produtos').update(data).eq('id', editing.id)
-    else await supabase.from('produtos').insert([data])
+    try {
+      if (editing) {
+        const res = await fetch('/api/produtos/' + editing.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        if (!res.ok) throw new Error('Erro ao atualizar produto')
+      } else {
+        const res = await fetch('/api/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        if (!res.ok) throw new Error('Erro ao criar produto')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar produto')
+    }
     setSaving(false)
     setShowModal(false)
     setEditing(null)
@@ -100,7 +117,12 @@ export default function ProdutosPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza?')) {
-      await supabase.from('produtos').delete().eq('id', id)
+      try {
+        const res = await fetch('/api/produtos/' + id, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Erro ao excluir produto')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir produto')
+      }
       fetchProdutos()
     }
   }

@@ -220,6 +220,18 @@ export const usuarioSchema = z.object({
   ativo: z.boolean().optional(),
 })
 
-export const usuarioCreateSchema = usuarioSchema.extend({
-  senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+export const usuarioCreateSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório'),
+  email: z.string().email().optional().or(z.literal('')).nullable(),
+  senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+  cpf: z.string().optional().nullable(),
+  telefone: z.string().optional().nullable(),
+  role: z.enum(['admin', 'gerente', 'mecanico', 'caixa', 'comum']),
+  ativo: z.boolean().optional(),
+})
+
+export const registerSchema = z.object({
+  nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  email: z.string().email('Email inválido'),
+  senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
 })

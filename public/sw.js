@@ -2,7 +2,6 @@ const CACHE = 'oficina-manager-v1'
 
 const STATIC_URLS = [
   '/',
-  '/login',
   '/manifest.json',
   '/icon.svg',
 ]

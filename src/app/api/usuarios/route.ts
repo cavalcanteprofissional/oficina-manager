@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { usuarioCreateSchema } from '@/lib/schemas'
+import { requireAuth, requireRole, handleError } from '@/lib/supabase/auth-helpers'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -20,10 +21,10 @@ export async function GET(request: Request) {
   
   let query = supabase
     .from('usuarios')
-    .select('*', { count: 'exact' })
+    .select('id, nome, cpf, telefone, role, ativo, created_at', { count: 'exact' })
     
   if (search) {
-    query = query.or(`nome.ilike.%${search}%`)
+    query = query.ilike('nome', `%${search}%`)
   }
   
   if (role) {
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false })
     
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'usuarios')
   }
   
   return NextResponse.json({
@@ -75,32 +76,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Acesso negado. Apenas administradores podem criar usuários.' }, { status: 403 })
   }
   
-  const { id, nome, email, senha, cpf, telefone, role, ativo } = parsed.data
+  const { nome, email, senha, cpf, telefone, role, ativo } = parsed.data
 
-  let userId = id
-
-  if (!userId) {
-    const authEmail = email || `${nome.toLowerCase().replace(/\s+/g, '.')}@oficina.local`
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: authEmail,
-      password: senha,
-      email_confirm: true,
-      user_metadata: { nome, role }
-    })
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 })
-    }
-    userId = authData.user.id
+  const authEmail = email || `${nome.toLowerCase().replace(/\s+/g, '.')}@oficina.local`
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email: authEmail,
+    password: senha,
+    email_confirm: true,
+    user_metadata: { nome, role }
+  })
+  if (authError) {
+    return handleError(authError, 'usuarios')
   }
+  const userId = authData.user.id
   
   const { data, error } = await supabase
     .from('usuarios')
-    .upsert({ id: userId, nome, email, cpf, telefone, role, ativo })
-    .select()
+    .upsert({ id: userId, nome, cpf, telefone, role, ativo })
+    .select('id, nome, cpf, telefone, role, ativo, created_at')
     .single()
     
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return handleError(error, 'usuarios')
   }
   
   return NextResponse.json(data)

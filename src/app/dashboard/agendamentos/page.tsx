@@ -129,15 +129,26 @@ export default function AgendamentosPage() {
     setSaving(true)
     const formData = new FormData(e.currentTarget)
     
-    await supabase.from('agendamentos').insert([{
-      cliente_id: selectedCliente,
-      veiculo_id: selectedVeiculo,
-      servico_id: formData.get('servico_id') || null,
-      data_agendamento: formData.get('data_agendamento'),
-      hora_agendamento: formData.get('hora_agendamento'),
-      mecanico_id: formData.get('mecanico_id') || null,
-      observacoes: formData.get('observacoes') || null,
-    }])
+    const response = await fetch('/api/agendamentos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente_id: selectedCliente,
+        veiculo_id: selectedVeiculo,
+        servico_id: formData.get('servico_id') || null,
+        data_agendamento: formData.get('data_agendamento'),
+        hora_agendamento: formData.get('hora_agendamento'),
+        mecanico_id: formData.get('mecanico_id') || null,
+        observacoes: formData.get('observacoes') || null,
+      }),
+    })
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao salvar agendamento')
+      setSaving(false)
+      return
+    }
 
     setSaving(false)
     setShowModal(false)
@@ -147,13 +158,27 @@ export default function AgendamentosPage() {
   }
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from('agendamentos').update({ status }).eq('id', id)
+    const response = await fetch('/api/agendamentos/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao atualizar status')
+      return
+    }
     fetchAgendamentos()
   }
 
   const deleteAgendamento = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir?')) {
-      await supabase.from('agendamentos').delete().eq('id', id)
+      const response = await fetch('/api/agendamentos/' + id, { method: 'DELETE' })
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Erro ao excluir agendamento')
+        return
+      }
       fetchAgendamentos()
     }
   }

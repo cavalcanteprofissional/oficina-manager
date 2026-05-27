@@ -108,10 +108,26 @@ export default function ContasPagarPage() {
       observacoes: formData.get('observacoes') || null,
     }
 
+    let response
     if (editing) {
-      await supabase.from('contas_pagar').update(data).eq('id', editing.id)
+      response = await fetch('/api/contas-pagar/' + editing.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
     } else {
-      await supabase.from('contas_pagar').insert([data])
+      response = await fetch('/api/contas-pagar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+    }
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao salvar conta')
+      setSaving(false)
+      return
     }
 
     setSaving(false)
@@ -127,11 +143,21 @@ export default function ContasPagarPage() {
 
   const pagarConta = async (conta: ContaPagar) => {
     const valorPago = conta.valor + conta.juros + conta.multa - conta.desconto
-    await supabase.from('contas_pagar').update({
-      status: 'pago',
-      data_pagamento: new Date().toISOString().split('T')[0],
-      valor_pago: valorPago
-    }).eq('id', conta.id)
+    const response = await fetch('/api/contas-pagar/' + conta.id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'pago',
+        data_pagamento: new Date().toISOString().split('T')[0],
+        valor_pago: valorPago,
+      }),
+    })
+
+    const result = await response.json()
+    if (!response.ok) {
+      setError(result.error || 'Erro ao pagar conta')
+      return
+    }
     fetchContas()
   }
 

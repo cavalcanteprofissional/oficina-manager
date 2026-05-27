@@ -72,7 +72,7 @@ export default function FornecedoresPage() {
       const { data, error: supabaseError } = await supabase
         .from('fornecedores')
         .select('*')
-        .or(`razao_social.ilike.%${search}%,cnpj.ilike.%${search}%`)
+        .or(`razao_social.ilike.%${search}%`).or(`cnpj.ilike.%${search}%`)
         .order('razao_social')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setFornecedores(data)
@@ -93,6 +93,7 @@ export default function FornecedoresPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
     const data = {
       razao_social: formData.get('razao_social'),
@@ -112,8 +113,32 @@ export default function FornecedoresPage() {
       contato_nome: formData.get('contato_nome') || null,
       observacoes: formData.get('observacoes') || null,
     }
-    if (editing) await supabase.from('fornecedores').update(data).eq('id', editing.id)
-    else await supabase.from('fornecedores').insert([data])
+    try {
+      let response: Response
+      if (editing) {
+        response = await fetch('/api/fornecedores/' + editing.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      } else {
+        response = await fetch('/api/fornecedores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      }
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Erro ao salvar fornecedor')
+        setSaving(false)
+        return
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar fornecedor')
+      setSaving(false)
+      return
+    }
     setSaving(false)
     setShowModal(false)
     setEditing(null)
@@ -122,8 +147,17 @@ export default function FornecedoresPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir?')) {
-      await supabase.from('fornecedores').delete().eq('id', id)
-      fetchFornecedores()
+      try {
+        const response = await fetch('/api/fornecedores/' + id, { method: 'DELETE' })
+        if (!response.ok) {
+          const result = await response.json()
+          setError(result.error || 'Erro ao excluir fornecedor')
+          return
+        }
+        fetchFornecedores()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir fornecedor')
+      }
     }
   }
 

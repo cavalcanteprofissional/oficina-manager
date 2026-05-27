@@ -36,7 +36,7 @@ export default function MecanicosPage() {
       const { data, error: supabaseError } = await supabase
         .from('mecanicos')
         .select('*')
-        .or(`nome.ilike.%${search}%,cpf.ilike.%${search}%`)
+        .or(`nome.ilike.%${search}%`).or(`cpf.ilike.%${search}%`)
         .order('nome')
       if (supabaseError) { setError(supabaseError.message); return }
       if (data) setMecanicos(data)
@@ -57,6 +57,7 @@ export default function MecanicosPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
     const data = {
       nome: formData.get('nome'),
@@ -74,8 +75,32 @@ export default function MecanicosPage() {
       comissao_percentual: parseFloat(formData.get('comissao_percentual') as string) || 0,
       ativo: true,
     }
-    if (editing) await supabase.from('mecanicos').update(data).eq('id', editing.id)
-    else await supabase.from('mecanicos').insert([data])
+    try {
+      let response: Response
+      if (editing) {
+        response = await fetch('/api/mecanicos/' + editing.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      } else {
+        response = await fetch('/api/mecanicos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+      }
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Erro ao salvar mecânico')
+        setSaving(false)
+        return
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar mecânico')
+      setSaving(false)
+      return
+    }
     setSaving(false)
     setShowModal(false)
     setEditing(null)
@@ -84,14 +109,36 @@ export default function MecanicosPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza?')) {
-      await supabase.from('mecanicos').delete().eq('id', id)
-      fetchMecanicos()
+      try {
+        const response = await fetch('/api/mecanicos/' + id, { method: 'DELETE' })
+        if (!response.ok) {
+          const result = await response.json()
+          setError(result.error || 'Erro ao excluir mecânico')
+          return
+        }
+        fetchMecanicos()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao excluir mecânico')
+      }
     }
   }
 
   const toggleAtivo = async (id: string, ativo: boolean) => {
-    await supabase.from('mecanicos').update({ ativo: !ativo }).eq('id', id)
-    fetchMecanicos()
+    try {
+      const response = await fetch('/api/mecanicos/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ativo: !ativo }),
+      })
+      if (!response.ok) {
+        const result = await response.json()
+        setError(result.error || 'Erro ao alterar status')
+        return
+      }
+      fetchMecanicos()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao alterar status')
+    }
   }
 
   return (

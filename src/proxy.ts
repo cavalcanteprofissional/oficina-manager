@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
         set(name: string, value: string) {
           request.cookies.set({ name, value })
           supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set({ name, value })
+          supabaseResponse.cookies.set({ name, value, sameSite: 'lax', secure: true })
         },
         remove(name: string) {
           request.cookies.delete(name)

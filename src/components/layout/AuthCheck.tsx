@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { podeAcessar, ABAS, Role } from '@/lib/utils/usuario'
+import { podeAcessar, Role } from '@/lib/utils/usuario'
 
 interface UsuarioData {
   id: string
@@ -32,44 +32,29 @@ export default function AuthCheck({ children }: { children: React.ReactNode }) {
 
         const { data: usuarioData, error: usuarioError } = await supabase
           .from('usuarios')
-          .select('*')
+          .select('id, nome, role, ativo')
           .eq('id', session.user.id)
           .single()
 
         if (usuarioError || !usuarioData) {
-          const { data: newUser, error: insertError } = await supabase
-            .from('usuarios')
-            .insert({
-              id: session.user.id,
-              nome: session.user.email?.split('@')[0] || 'Usuário',
-              role: 'comum',
-              ativo: true
-            })
-            .select()
-            .single()
-
-          if (insertError || !newUser) {
-            console.error('Erro ao criar usuário:', insertError)
-            router.push('/login')
-            return
-          }
-
-          setUsuario(newUser)
-        } else {
-          if (!usuarioData.ativo) {
-            await supabase.auth.signOut()
-            router.push('/login')
-            return
-          }
-          setUsuario(usuarioData)
+          await supabase.auth.signOut()
+          router.push('/login')
+          return
         }
+
+        if (!usuarioData.ativo) {
+          await supabase.auth.signOut()
+          router.push('/login')
+          return
+        }
+
+        setUsuario(usuarioData)
 
         const pathParts = pathname.split('/').filter(Boolean)
         const currentPage = pathParts[0] === 'dashboard' ? pathParts[1] : 'dashboard'
 
-        if (currentPage && usuarioData) {
-          const temPermissao = podeAcessar(usuarioData.role as Role, currentPage)
-          
+        if (currentPage && currentPage !== 'dashboard') {
+          const temPermissao = podeAcessar(usuarioData.role, currentPage)
           if (!temPermissao) {
             router.push('/dashboard')
             return
