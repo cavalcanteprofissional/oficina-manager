@@ -1,9 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import { usuarioSchema } from '@/lib/schemas'
+import { usuarioCreateSchema } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
+  
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) {
+    return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
+  }
+  
   const { searchParams } = new URL(request.url)
   
   const page = parseInt(searchParams.get('page') || '1')
@@ -44,9 +51,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const supabase = await createClient()
+  const supabaseAdmin = await createAdminClient()
   const body = await request.json()
   
-  const parsed = usuarioSchema.safeParse(body)
+  const parsed = usuarioCreateSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors }, { status: 400 })
   }
@@ -68,18 +76,14 @@ export async function POST(request: Request) {
   }
   
   const { id, nome, email, senha, cpf, telefone, role, ativo } = parsed.data
-  
-  if (!id && !senha) {
-    return NextResponse.json({ error: 'Senha é obrigatória para novos usuários' }, { status: 400 })
-  }
 
   let userId = id
 
   if (!userId) {
     const authEmail = email || `${nome.toLowerCase().replace(/\s+/g, '.')}@oficina.local`
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: authEmail,
-      password: senha!,
+      password: senha,
       email_confirm: true,
       user_metadata: { nome, role }
     })

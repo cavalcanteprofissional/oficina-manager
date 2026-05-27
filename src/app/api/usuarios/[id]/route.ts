@@ -8,6 +8,11 @@ export async function GET(
   const supabase = await createClient()
   const { id } = await params
   
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) {
+    return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
+  }
+  
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')

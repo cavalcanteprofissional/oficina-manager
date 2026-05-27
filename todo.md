@@ -81,4 +81,21 @@
 
 ---
 
+---
+
+## Fase 4: Segurança (Em Andamento)
+
+### 🔴 Críticos
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| S1 | `admin.createUser()` falha — usa anon key | Criar `createAdminClient()` com `SUPABASE_SERVICE_ROLE_KEY` | `src/lib/supabase/admin.ts`, `api/usuarios/route.ts` |
+| S2 | `proxy.ts` nunca executado | Next.js 16 já reconhece `proxy.ts` nativamente — só precisava existir | `src/proxy.ts` |
+| S3 | GET /api/usuarios sem auth | Adicionar `getUser()` check nos GETs | `api/usuarios/route.ts`, `api/usuarios/[id]/route.ts` |
+| S4 | POST usa schema fraco (`usuarioSchema`) | Trocar para `usuarioCreateSchema` | `api/usuarios/route.ts` |
+
+### 🟠 Médios
+| ID | Issue | Solução | Arquivos |
+|----|-------|---------|----------|
+| S5 | Outros GETs de API sem auth | Auditar e adicionar auth checks | Todos os `api/*` |
+
 ## Build: ✅ Compila sem erros
